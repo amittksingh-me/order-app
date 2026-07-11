@@ -3,11 +3,13 @@ import { syncSheet } from "../lib/sheets.js";
 
 const STORAGE_KEY = "sheet-csv-url";
 
+const DEFAULT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeqQBp7FYdB6BzQ20Y3Q-rFDuQemV50OpQIetw7LDI0hVBM4NEGYwyLm58s77UEWyp89ygXRixzVTI/pub?gid=0&single=true&output=csv";
+
 function loadUrl() {
   try {
-    return localStorage.getItem(STORAGE_KEY) || "";
+    return localStorage.getItem(STORAGE_KEY) || DEFAULT_URL;
   } catch {
-    return "";
+    return DEFAULT_URL;
   }
 }
 function saveUrl(url) {

@@ -12,11 +12,13 @@ import {
   deleteMemory,
   importMemory,
 } from "./lib/memory";
-
-const SHEET_URL_KEY = "sheet-csv-url";
 import InputPanel from "./components/InputPanel";
 import ReviewPanel from "./components/ReviewPanel";
 import MemoryPanel from "./components/MemoryPanel";
+
+const SHEET_URL_KEY = "sheet-csv-url";
+const DEFAULT_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeqQBp7FYdB6BzQ20Y3Q-rFDuQemV50OpQIetw7LDI0hVBM4NEGYwyLm58s77UEWyp89ygXRixzVTI/pub?gid=0&single=true&output=csv";
 
 // Merge shipped products.json with IndexedDB user overrides into a single
 // products.json-shaped object (user memory wins per key). Used for export.
@@ -49,9 +51,9 @@ export default function App() {
   const [lastSync, setLastSync] = useState(null);
   const [syncUrl, setSyncUrl] = useState(() => {
     try {
-      return localStorage.getItem(SHEET_URL_KEY) || "";
+      return localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
     } catch {
-      return "";
+      return DEFAULT_SHEET_URL;
     }
   });
 
@@ -81,15 +83,17 @@ export default function App() {
       .then((mem) => {
         setUserMemory(mem);
         try {
-          const url = localStorage.getItem(SHEET_URL_KEY);
-          if (url) {
-            syncSheet(url)
-              .then((res) => {
-                setUserMemory(res.memory);
-                setLastSync(Date.now());
-              })
-              .catch(() => {});
+          let url = localStorage.getItem(SHEET_URL_KEY);
+          if (!url) {
+            url = DEFAULT_SHEET_URL;
+            localStorage.setItem(SHEET_URL_KEY, url);
           }
+          syncSheet(url)
+            .then((res) => {
+              setUserMemory(res.memory);
+              setLastSync(Date.now());
+            })
+            .catch(() => {});
         } catch {}
       })
       .catch(() => setUserMemory({}));
