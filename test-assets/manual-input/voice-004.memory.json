@@ -1,0 +1,18 @@
+{
+  "nandini shubham milk 500 ml bakery cakes dairy": {
+    "product": "Shubham Milk",
+    "brand": "Nandini",
+    "size": "500 ml",
+    "defaultQty": 1,
+    "category": "bakery, cakes & dairy",
+    "keywords": ["milk", "doodh", "dudh"]
+  },
+  "fresho farm eggs 6 pcs eggs meat fish": {
+    "product": "Farm Eggs",
+    "brand": "Fresho",
+    "size": "6 pcs",
+    "defaultQty": 1,
+    "category": "eggs, meat & fish",
+    "keywords": ["anda", "andaa", "eggs"]
+  }
+}
