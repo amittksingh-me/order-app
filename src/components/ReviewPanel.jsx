@@ -14,6 +14,11 @@ export default function ReviewPanel({ items, onResetInput }) {
       <div className="review-header">
         <h2>Review</h2>
         <button className="btn-link" type="button" onClick={onResetInput}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}>
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
           New list
         </button>
       </div>

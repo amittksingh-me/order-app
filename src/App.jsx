@@ -192,8 +192,13 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>
-          <span className="logo">🛒</span>
-          Shopping List Engine
+          <span className="logo">
+            <svg viewBox="0 0 100 100" width="22" height="22" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 30h70l-8 50H23L15 30z" />
+              <path d="M37 30V20a13 13 0 0 1 26 0v10" />
+            </svg>
+          </span>
+          BaskIt
         </h1>
         <nav>
           <button
@@ -258,9 +263,7 @@ export default function App() {
 
         />
       )}
-      <p className="foot-hint">
-        Type, enrich, copy, paste into BigBasket
-      </p>
+      <p className="foot-hint">Type, prep, paste into BigBasket</p>
     </div>
   );
 }

@@ -12,8 +12,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Shopping List Engine',
-        short_name: 'ShopList',
+        name: 'BaskIt',
+        short_name: 'BaskIt',
         description: 'Enrich your shopping lists',
         theme_color: '#f4f5f7',
         background_color: '#f4f5f7',

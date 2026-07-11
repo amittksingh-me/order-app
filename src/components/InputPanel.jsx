@@ -102,7 +102,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
       </div>
       <div className="input-actions">
         <button className="btn-primary" onClick={onEnrich} type="button">
-          Enrich &amp; Copy
+          Prep List
         </button>
         <button className="btn-secondary" onClick={onLaunch} type="button">
           Launch BigBasket
