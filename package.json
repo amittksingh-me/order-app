@@ -8,6 +8,7 @@
     "build": "vite build",
     "build-db": "node scripts/build-db.mjs",
     "clean-db": "node scripts/clean-products.mjs",
+    "generate-icons": "node scripts/generate-icons.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "node test-assets/run-tests.mjs"

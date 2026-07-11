@@ -25,7 +25,7 @@ export default function ReviewPanel({ items, onCopy, copied, onResetInput }) {
       )}
 
       <button className="btn-primary copy-btn" type="button" onClick={onCopy}>
-        {copied ? "Copied!" : "📋 Copy Shopping List"}
+        {copied ? "Copied!" : "Copy Shopping List"}
       </button>
     </section>
   );

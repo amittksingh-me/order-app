@@ -1,18 +1,18 @@
 :root {
-  --bg-1: #e8f7ee;
-  --bg-2: #f3f0fb;
+  --bg: #f4f5f7;
   --panel: #ffffff;
-  --text: #1c2331;
-  --muted: #8b93a3;
-  --border: #e8ebf1;
-  --accent: #15a35a;
-  --accent-2: #0ea5a5;
-  --accent-grad: linear-gradient(135deg, #15a35a 0%, #0ea5a5 100%);
-  --accent-soft: #e6f7ee;
-  --danger: #e0443b;
-  --shadow-sm: 0 2px 8px rgba(20, 40, 60, 0.06);
-  --shadow-md: 0 8px 24px rgba(20, 40, 60, 0.10);
-  --radius: 18px;
+  --text: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --muted: #8e8e93;
+  --border: #e5e5ea;
+  --accent: #5e5ce6;
+  --accent-soft: #f0efff;
+  --accent-grad: linear-gradient(135deg, #5e5ce6, #7c73e6);
+  --danger: #ff3b30;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 * {
@@ -21,9 +21,8 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 100%);
-  background-attachment: fixed;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
   color: var(--text);
   -webkit-text-size-adjust: 100%;
   min-height: 100svh;
@@ -34,9 +33,9 @@ button {
 }
 
 .app {
-  max-width: 600px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 0 16px 64px;
+  padding: 0 16px 48px;
 }
 
 /* ---------- Header ---------- */
@@ -44,39 +43,39 @@ button {
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 18px 0 12px;
-  background: linear-gradient(160deg, var(--bg-1) 60%, rgba(232, 247, 238, 0));
-  backdrop-filter: blur(6px);
+  padding: 16px 0 12px;
+  background: rgba(244, 245, 247, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .app-header h1 {
-  font-size: 21px;
-  font-weight: 800;
-  margin: 0 0 14px;
-  letter-spacing: -0.3px;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  letter-spacing: -0.4px;
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--text);
 }
 
 .app-header h1 .logo {
   display: inline-grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: var(--accent-grad);
-  box-shadow: var(--shadow-sm);
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .app-header nav {
   display: flex;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 5px;
-  border-radius: 14px;
-  box-shadow: var(--shadow-sm);
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px;
+  border-radius: 12px;
 }
 
 .app-header nav button {
@@ -84,18 +83,19 @@ button {
   border: none;
   background: transparent;
   padding: 10px 0;
-  border-radius: 10px;
+  border-radius: 9px;
   font-size: 14px;
-  font-weight: 700;
-  color: var(--muted);
+  font-weight: 600;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
 }
 
 .app-header nav button.active {
-  background: var(--accent-grad);
-  color: #fff;
+  background: var(--panel);
+  color: var(--text);
   box-shadow: var(--shadow-sm);
+  font-weight: 600;
 }
 
 /* ---------- Panels ---------- */
@@ -103,7 +103,7 @@ button {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 20px;
   margin-top: 16px;
   box-shadow: var(--shadow-md);
   animation: pop 0.25s ease;
@@ -112,7 +112,7 @@ button {
 @keyframes pop {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -123,21 +123,26 @@ button {
 /* ---------- Input ---------- */
 .item-input {
   width: 100%;
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 15px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
   font-size: 16px;
+  line-height: 1.5;
   resize: vertical;
-  background: #fbfdfc;
+  background: #fafafa;
   color: var(--text);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .item-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   background: #fff;
+}
+
+.item-input::placeholder {
+  color: var(--muted);
 }
 
 .input-actions {
@@ -151,17 +156,16 @@ button {
   background: var(--accent-grad);
   color: #fff;
   border: none;
-  border-radius: 14px;
-  padding: 15px;
-  font-size: 16px;
-  font-weight: 800;
+  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(21, 163, 90, 0.28);
-  transition: transform 0.12s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.2s;
 }
 
 .btn-primary:hover {
-  box-shadow: 0 8px 22px rgba(21, 163, 90, 0.36);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.35);
 }
 
 .btn-primary:active {
@@ -169,31 +173,38 @@ button {
 }
 
 .btn-secondary {
-  background: #fff;
+  background: var(--panel);
   color: var(--text);
   border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .btn-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .btn-danger {
-  background: #fff;
+  background: transparent;
   color: var(--danger);
   border: 1.5px solid var(--danger);
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background: var(--danger);
+  color: #fff;
 }
 
 .btn-link {
@@ -202,7 +213,13 @@ button {
   color: var(--accent);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
+  padding: 4px 0;
+  transition: opacity 0.15s;
+}
+
+.btn-link:hover {
+  opacity: 0.7;
 }
 
 /* ---------- Review ---------- */
@@ -210,11 +227,14 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .review-header h2 {
-  font-size: 17px;
+  font-size: 16px;
+  font-weight: 600;
   margin: 0;
+  color: var(--text);
 }
 
 .items-list {
@@ -226,10 +246,10 @@ button {
 
 .item-block {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   padding: 12px;
-  background: #fbfdfc;
-  transition: box-shadow 0.15s;
+  background: #fafafa;
+  transition: box-shadow 0.2s;
 }
 
 .item-block:hover {
@@ -245,7 +265,7 @@ button {
 
 .item-row.fuzzy {
   background: #fff7e0;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 5px;
 }
 
@@ -253,8 +273,8 @@ button {
 .item-size,
 .item-qty {
   border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 9px 10px;
   font-size: 15px;
   width: 100%;
   background: #fff;
@@ -273,13 +293,18 @@ button {
   background: #fdeceb;
   border: none;
   color: var(--danger);
-  border-radius: 9px;
+  border-radius: 8px;
   width: 30px;
   height: 30px;
   cursor: pointer;
   font-size: 14px;
   display: grid;
   place-items: center;
+  transition: background 0.15s;
+}
+
+.btn-icon:hover {
+  background: #fcd8d6;
 }
 
 .badge {
@@ -304,12 +329,12 @@ button {
   background: var(--accent-soft);
   color: var(--accent);
   border: 1.5px solid var(--accent);
-  border-radius: 10px;
-  padding: 9px 13px;
+  border-radius: 8px;
+  padding: 8px 12px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .btn-small:hover {
@@ -320,6 +345,7 @@ button {
 .btn-small:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .btn-ghost {
@@ -328,16 +354,22 @@ button {
   color: var(--muted);
 }
 
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: transparent;
+}
+
 .copy-btn {
   width: 100%;
-  margin-top: 8px;
-  font-size: 17px;
+  margin-top: 12px;
+  font-size: 15px;
 }
 
 .empty {
   color: var(--muted);
   text-align: center;
-  padding: 26px;
+  padding: 24px;
   font-size: 14px;
 }
 
@@ -351,12 +383,12 @@ button {
 .stat {
   flex: 1;
   border: 1.5px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   padding: 16px;
   text-align: center;
-  background: #fbfdfc;
+  background: #fafafa;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
 }
 
 .stat:hover {
@@ -366,13 +398,13 @@ button {
 .stat.active {
   border-color: transparent;
   background: var(--accent-grad);
-  box-shadow: 0 6px 16px rgba(21, 163, 90, 0.25);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.3);
 }
 
 .stat-num {
   display: block;
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--text);
 }
 
@@ -384,7 +416,7 @@ button {
 .stat-label {
   font-size: 12px;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .search-box {
@@ -394,41 +426,47 @@ button {
 
 .search-input {
   width: 100%;
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 13px 40px 13px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 40px 12px 14px;
   font-size: 15px;
-  background: #fbfdfc;
+  background: #fafafa;
   color: var(--text);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   background: #fff;
 }
 
 .search-clear {
   position: absolute;
-  right: 9px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
-  background: #eceff4;
-  color: var(--muted);
+  background: var(--border);
+  color: var(--text-secondary);
   border-radius: 50%;
   width: 26px;
   height: 26px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+}
+
+.search-clear:hover {
+  background: #d1d1d6;
 }
 
 .add-btn {
   width: 100%;
   margin-bottom: 14px;
-  font-weight: 700;
 }
 
 .editing-panel {
@@ -461,16 +499,17 @@ button {
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-secondary);
 }
 
 .editor-grid input {
   border: 1.5px solid var(--border);
-  border-radius: 9px;
+  border-radius: 8px;
   padding: 9px 10px;
   font-size: 14px;
   background: #fff;
   color: var(--text);
+  transition: border-color 0.15s;
 }
 
 .editor-grid input:focus {
@@ -490,7 +529,7 @@ button {
 /* ---------- Table ---------- */
 .table-wrap {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -502,30 +541,31 @@ button {
 
 .product-table thead th {
   text-align: left;
-  background: var(--accent-grad);
-  color: #fff;
-  font-weight: 700;
-  padding: 12px 14px;
+  background: #fafafa;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 10px 12px;
   font-size: 12px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
 }
 
 .product-table tbody tr {
-  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   transition: background 0.12s;
 }
 
-.product-table tbody tr:nth-child(even) {
-  background: #f7faf9;
+.product-table tbody tr:last-child {
+  border-bottom: none;
 }
 
 .product-table tbody tr:hover {
-  background: var(--accent-soft);
+  background: #f8f8fa;
 }
 
 .product-table td {
-  padding: 11px 14px;
+  padding: 10px 12px;
   vertical-align: middle;
   color: var(--text);
 }
@@ -551,14 +591,14 @@ button {
 .pager-info {
   font-size: 13px;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .settings-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
@@ -568,5 +608,6 @@ button {
   text-align: center;
   color: var(--muted);
   font-size: 12px;
-  margin-top: 22px;
+  margin-top: 24px;
+  font-weight: 400;
 }

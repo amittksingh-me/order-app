@@ -15,7 +15,8 @@ export default defineConfig({
         name: 'Shopping List Engine',
         short_name: 'ShopList',
         description: 'Enrich your shopping lists',
-        theme_color: '#ffffff',
+        theme_color: '#f4f5f7',
+        background_color: '#f4f5f7',
         icons: [
           {
             src: 'pwa-192x192.png',

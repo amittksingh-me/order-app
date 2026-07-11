@@ -120,7 +120,7 @@ export default function MemoryPanel({
             <input
               value={draft.brand}
               onChange={(e) => setField("brand", e.target.value)}
-              placeholder="e.g. fresho!"
+              placeholder="e.g. fresho"
             />
           </label>
           <label>

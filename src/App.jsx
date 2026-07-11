@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import "./App.css";
 import products from "./data/products.json";
 import { enrichItems, reLookup } from "./lib/enrich";
 import { formatShoppingList } from "./lib/format";
@@ -177,7 +178,7 @@ export default function App() {
         />
       )}
       <p className="foot-hint">
-        Type quickly → enrich → copy → paste into BigBasket
+        Type, enrich, copy, paste into BigBasket
       </p>
     </div>
   );
