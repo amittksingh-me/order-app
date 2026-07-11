@@ -1,14 +1,9 @@
 import ProductTable from "./ProductTable.jsx";
 
-const STATUS_LABEL = {
-  "user-memory": { label: "Memory", cls: "status-ok" },
-  builtin: { label: "Matched", cls: "status-ok" },
-  unknown: { label: "Unknown", cls: "status-unknown" },
-};
-
-function statusInfo(it) {
-  if (it.fuzzy) return { label: "Fuzzy", cls: "status-fuzzy" };
-  return STATUS_LABEL[it.source] || { label: "Unknown", cls: "status-unknown" };
+function rowStatusCls(item) {
+  if (!item.matched) return "row-unknown";
+  if (item.fuzzy) return "row-fuzzy";
+  return "row-ok";
 }
 
 export default function ReviewPanel({ items, onDeleteItem, onResetInput }) {
@@ -39,29 +34,23 @@ export default function ReviewPanel({ items, onDeleteItem, onResetInput }) {
       ) : (
         <ProductTable
           rows={rows}
-          actions={(row) => {
-            const item = items.find((it) => it.id === row.id);
-            return (
-              <>
-                {item && (
-                  <span className={`status-badge ${statusInfo(item).cls}`}>
-                    {statusInfo(item).label}
-                  </span>
-                )}
-                <button
-                  className="btn-icon btn-icon-sm"
-                  type="button"
-                  onClick={() => onDeleteItem(row.id)}
-                  title="Remove item"
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </>
-            );
+          rowClass={(r) => {
+            const item = items.find((it) => it.id === r.id);
+            return item ? rowStatusCls(item) : "";
           }}
+          actions={(row) => (
+            <button
+              className="btn-icon btn-icon-sm"
+              type="button"
+              onClick={() => onDeleteItem(row.id)}
+              title="Remove item"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
         />
       )}
 

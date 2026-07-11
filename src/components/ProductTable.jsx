@@ -4,7 +4,7 @@
 // When `editingId` matches a row and `renderEditor(row)` is provided, that row
 // is replaced by an editor row (used by the Memory page).
 
-export default function ProductTable({ rows, actions, editingId, renderEditor }) {
+export default function ProductTable({ rows, actions, editingId, renderEditor, rowClass }) {
   return (
     <div className="table-wrap">
       <table className="product-table">
@@ -24,7 +24,7 @@ export default function ProductTable({ rows, actions, editingId, renderEditor })
                 <td colSpan={actions ? 5 : 4}>{renderEditor(r)}</td>
               </tr>
             ) : (
-              <tr key={r.id}>
+              <tr key={r.id} className={rowClass?.(r) || ""}>
                 <td>{r.brand || "—"}</td>
                 <td className="pc-name">{r.product}</td>
                 <td>{r.size || "—"}</td>

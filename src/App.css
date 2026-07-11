@@ -388,29 +388,6 @@ button {
   height: 24px;
 }
 
-.status-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-
-.status-badge.status-ok {
-  background: #e4f3e4;
-  color: #1a6b1a;
-}
-
-.status-badge.status-fuzzy {
-  background: #fff0bf;
-  color: #8a5a00;
-}
-
-.status-badge.status-unknown {
-  background: #fde8e8;
-  color: #b33a3a;
-}
-
 .badge {
   grid-column: 1 / -1;
   justify-self: start;
@@ -699,13 +676,23 @@ button {
   justify-content: flex-end;
 }
 
-.product-table .row-actions .status-badge {
-  margin-right: auto;
-}
-
 .product-table .pc-name {
   font-weight: 600;
 }
+
+.product-table .pc-name::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.row-ok .pc-name::before { background: #2e7d32; }
+.row-fuzzy .pc-name::before { background: #e6a700; }
+.row-unknown .pc-name::before { background: #d32f2f; }
 
 .pager {
   display: flex;

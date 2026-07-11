@@ -1,5 +1,10 @@
 {
-  "normalized": ["dudh", "under", "paneer", "anda"],
+  "normalized": [
+    "dudh",
+    "under",
+    "paneer",
+    "anda"
+  ],
   "matched": {
     "dudh": true,
     "under": false,
@@ -12,5 +17,5 @@
     "paneer": "builtin",
     "anda": "user-memory"
   },
-  "finalList": "under\nNandini Shubham Milk 500 ml\nMilky Mist Paneer 200 g\nFresho Farm Eggs 6 pcs"
+  "finalList": "under, Nandini Shubham Milk 500 ml, Milky Mist Paneer 200 g, Fresho Farm Eggs 6 pcs"
 }

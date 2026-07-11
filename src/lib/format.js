@@ -10,5 +10,5 @@ export function formatShoppingList(items) {
   return sorted
     .map((it) => it.preferredProduct || it.input)
     .filter(Boolean)
-    .join("\n");
+    .join(", ");
 }
