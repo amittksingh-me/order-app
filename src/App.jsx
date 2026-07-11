@@ -116,6 +116,15 @@ export default function App() {
   }, []);
 
   async function handleEnrich() {
+    await doEnrich();
+  }
+
+  async function handleLaunch() {
+    await doEnrich();
+    window.open("https://www.bigbasket.com", "_blank");
+  }
+
+  async function doEnrich() {
     const lines = rawInput.split("\n");
     const result = enrichItems(lines, products, userMemory);
     setItems(result);
@@ -213,6 +222,7 @@ export default function App() {
             value={rawInput}
             onChange={setRawInput}
             onEnrich={handleEnrich}
+            onLaunch={handleLaunch}
           />
 
           {enriched && (

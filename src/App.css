@@ -150,12 +150,8 @@ button {
   gap: 10px;
   margin-top: 14px;
 }
-.input-actions a {
+.input-actions .btn-secondary {
   flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
 }
 
 .btn-primary {

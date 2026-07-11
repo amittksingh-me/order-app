@@ -1,4 +1,4 @@
-export default function InputPanel({ value, onChange, onEnrich }) {
+export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
   return (
     <section className="panel input-panel">
       <textarea
@@ -12,14 +12,9 @@ export default function InputPanel({ value, onChange, onEnrich }) {
         <button className="btn-primary" onClick={onEnrich} type="button">
           Enrich &amp; Copy
         </button>
-        <a
-          className="btn-secondary"
-          href="https://www.bigbasket.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <button className="btn-secondary" onClick={onLaunch} type="button">
           Launch BigBasket
-        </a>
+        </button>
       </div>
     </section>
   );
