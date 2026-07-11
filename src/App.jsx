@@ -116,10 +116,7 @@ export default function App() {
   }, []);
 
   async function handleEnrich() {
-    const text = await doEnrich();
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {}
+    await doEnrich();
   }
 
   async function handleLaunch() {
@@ -132,7 +129,12 @@ export default function App() {
     const result = enrichItems(lines, products, userMemory);
     setItems(result);
     setEnriched(true);
-    return formatShoppingList(result);
+    const text = formatShoppingList(result);
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // clipboard write failed silently
+    }
   }
 
   async function handleReset() {
