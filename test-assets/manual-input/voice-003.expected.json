@@ -1,0 +1,21 @@
+{
+  "normalized": [
+    "dudh",
+    "andaa",
+    "paneer",
+    "olive oil"
+  ],
+  "matched": {
+    "dudh": true,
+    "andaa": true,
+    "paneer": true,
+    "olive oil": true
+  },
+  "source": {
+    "dudh": "user-memory",
+    "andaa": "user-memory",
+    "paneer": "builtin",
+    "olive oil": "user-memory"
+  },
+  "finalList": "Nandini Shubham Milk 500 ml\nFresho Farm Eggs 6 pcs\nMilky Mist Paneer 200 g\nBorges Extra Virgin Olive Oil 250 ml"
+}

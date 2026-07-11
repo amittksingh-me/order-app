@@ -5,6 +5,7 @@ import { normalizeItem } from "./normalize.js";
 import { detectDuplicates } from "./duplicate.js";
 import { lookupProduct } from "./lookup.js";
 import { buildDisplayName } from "./product.js";
+import { parseTranscript } from "./voice.js";
 
 let counter = 0;
 function nextId() {
@@ -20,6 +21,19 @@ export function enrichItems(lines, builtin, userMemory) {
   const result = [];
   groups.forEach((g) => {
     const look = lookupProduct(g.key, builtin, userMemory);
+    if (!look.matched && g.originals[0]) {
+      const splits = parseTranscript(g.originals[0], builtin, userMemory);
+      if (splits.length > 1) {
+        const anyMatch = splits.some((s) =>
+          lookupProduct(normalizeItem(s), builtin, userMemory).matched
+        );
+        if (anyMatch) {
+          const subItems = enrichItems(splits, builtin, userMemory);
+          result.push(...subItems);
+          return;
+        }
+      }
+    }
     const base = {
       id: nextId(),
       input: g.originals[0] || g.key,

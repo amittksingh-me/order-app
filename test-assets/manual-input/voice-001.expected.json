@@ -1,0 +1,18 @@
+{
+  "normalized": [
+    "dudh",
+    "andaa",
+    "paneer"
+  ],
+  "matched": {
+    "dudh": true,
+    "andaa": false,
+    "paneer": true
+  },
+  "source": {
+    "dudh": "user-memory",
+    "andaa": "unknown",
+    "paneer": "builtin"
+  },
+  "finalList": "Nandini Shubham Milk 500 ml\nandaa\nMilky Mist Paneer 200 g"
+}

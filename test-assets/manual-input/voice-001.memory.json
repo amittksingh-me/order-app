@@ -1,0 +1,10 @@
+{
+  "nandini shubham milk 500 ml bakery cakes dairy": {
+    "product": "Shubham Milk",
+    "brand": "Nandini",
+    "size": "500 ml",
+    "defaultQty": 1,
+    "category": "bakery, cakes & dairy",
+    "keywords": ["milk", "doodh", "dudh"]
+  }
+}

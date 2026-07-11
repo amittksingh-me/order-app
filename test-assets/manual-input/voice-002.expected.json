@@ -1,0 +1,18 @@
+{
+  "normalized": [
+    "dudh",
+    "andaa",
+    "paneer"
+  ],
+  "matched": {
+    "dudh": true,
+    "andaa": true,
+    "paneer": true
+  },
+  "source": {
+    "dudh": "user-memory",
+    "andaa": "user-memory",
+    "paneer": "builtin"
+  },
+  "finalList": "Nandini Shubham Milk 500 ml\nFresho Farm Eggs 6 pcs\nMilky Mist Paneer 200 g"
+}
