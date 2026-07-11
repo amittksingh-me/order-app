@@ -200,6 +200,28 @@ button {
   100% { transform: scale(1.8); opacity: 0; }
 }
 
+.clear-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+.clear-btn:hover {
+  opacity: 1;
+  color: var(--text);
+}
 
 .input-actions {
   display: flex;

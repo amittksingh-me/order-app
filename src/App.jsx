@@ -11,6 +11,9 @@ import {
   clearMemory,
   deleteMemory,
   importMemory,
+  getDraft,
+  saveDraft,
+  deleteDraft,
 } from "./lib/memory";
 import InputPanel from "./components/InputPanel";
 import ReviewPanel from "./components/ReviewPanel";
@@ -82,21 +85,26 @@ export default function App() {
     getAllMemory()
       .then((mem) => {
         setUserMemory(mem);
-        try {
-          let url = localStorage.getItem(SHEET_URL_KEY);
-          if (!url) {
-            url = DEFAULT_SHEET_URL;
-            localStorage.setItem(SHEET_URL_KEY, url);
-          }
-          syncSheet(url)
-            .then((res) => {
-              setUserMemory(res.memory);
-              setLastSync(Date.now());
-            })
-            .catch(() => {});
-        } catch {}
+        return getDraft();
+      })
+      .then((draft) => {
+        if (draft) setRawInput(draft);
       })
       .catch(() => setUserMemory({}));
+
+    try {
+      let url = localStorage.getItem(SHEET_URL_KEY);
+      if (!url) {
+        url = DEFAULT_SHEET_URL;
+        localStorage.setItem(SHEET_URL_KEY, url);
+      }
+      syncSheet(url)
+        .then((res) => {
+          setUserMemory(res.memory);
+          setLastSync(Date.now());
+        })
+        .catch(() => {});
+    } catch {}
 
     const id = setInterval(() => {
       try {
@@ -114,6 +122,14 @@ export default function App() {
 
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (rawInput) saveDraft(rawInput);
+      else deleteDraft();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [rawInput]);
 
   async function handleEnrich() {
     await doEnrich();
@@ -152,6 +168,13 @@ export default function App() {
   async function handleReset() {
     await clearMemory();
     setUserMemory({});
+  }
+
+  async function handleClearInput() {
+    setRawInput("");
+    setEnriched(false);
+    setItems([]);
+    await deleteDraft();
   }
 
   async function handleDeleteLearned(key) {
@@ -245,17 +268,14 @@ export default function App() {
             onChange={setRawInput}
             onEnrich={handleEnrich}
             onLaunch={handleLaunch}
+            onClear={handleClearInput}
           />
 
           {enriched && (
             <ReviewPanel
               items={items}
               onDeleteItem={handleDeleteItem}
-              onResetInput={() => {
-                setEnriched(false);
-                setItems([]);
-                setRawInput("");
-              }}
+              onResetInput={handleClearInput}
             />
           )}
         </main>
