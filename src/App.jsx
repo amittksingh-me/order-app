@@ -85,10 +85,15 @@ export default function App() {
     getAllMemory()
       .then((mem) => {
         setUserMemory(mem);
-        return getDraft();
-      })
-      .then((draft) => {
-        if (draft) setRawInput(draft);
+        // Prefer localStorage (synchronous beforeunload backup) over
+        // IndexedDB (debounce window could miss last keystroke).
+        let draft = null;
+        try { draft = localStorage.getItem("draft-input"); } catch {}
+        if (draft) {
+          setRawInput(draft);
+        } else {
+          return getDraft().then((d) => { if (d) setRawInput(d); });
+        }
       })
       .catch(() => setUserMemory({}));
 
@@ -123,12 +128,22 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
+  // Save draft immediately on every change (IndexedDB async but immediate).
+  // Also sync to localStorage on beforeunload as a synchronous safety net.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (rawInput) saveDraft(rawInput);
-      else deleteDraft();
-    }, 500);
-    return () => clearTimeout(timer);
+    if (rawInput) saveDraft(rawInput);
+    else deleteDraft();
+  }, [rawInput]);
+
+  useEffect(() => {
+    const handle = () => {
+      try {
+        if (rawInput) localStorage.setItem("draft-input", rawInput);
+        else localStorage.removeItem("draft-input");
+      } catch {}
+    };
+    addEventListener("beforeunload", handle);
+    return () => removeEventListener("beforeunload", handle);
   }, [rawInput]);
 
   async function handleEnrich() {
@@ -174,6 +189,7 @@ export default function App() {
     setRawInput("");
     setEnriched(false);
     setItems([]);
+    try { localStorage.removeItem("draft-input"); } catch {}
     await deleteDraft();
   }
 
