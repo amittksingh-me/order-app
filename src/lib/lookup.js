@@ -52,6 +52,20 @@ function fuzzyMatch(key, builtin) {
 
 // builtin: imported products.json object
 // userMemory: object keyed by normalized key -> product shape
+// Checks if key is a prefix of a user-memory key (used for clipboard re-paste
+// where CSV keys include the category). Avoids polluting lookupProduct since
+// parseTranscript also calls it and would match partial prefixes otherwise.
+export function prefixMatchUserMemory(key, userMemory) {
+  if (!key || !userMemory) return null;
+  const prefix = key + " ";
+  for (const [mk, entry] of Object.entries(userMemory)) {
+    if (mk.startsWith(prefix)) {
+      return entry;
+    }
+  }
+  return null;
+}
+
 export function lookupProduct(key, builtin, userMemory) {
   if (!key) return { matched: false, normalized: key };
 
@@ -69,19 +83,19 @@ export function lookupProduct(key, builtin, userMemory) {
     }
   }
 
-  // 3 & 4. Built-in exact + keyword index
+  // 4 & 5. Built-in exact + keyword index
   const index = buildKeywordIndex(builtin);
   if (index.has(key)) {
     const entryKey = index.get(key);
     return { matched: true, source: "builtin", product: builtin[entryKey], normalized: key };
   }
 
-  // 5. Fuzzy match (built-in only)
+  // 6. Fuzzy match (built-in only)
   const fuzzy = fuzzyMatch(key, builtin);
   if (fuzzy) {
     return { matched: true, source: "builtin", product: fuzzy.entry, normalized: key, fuzzy: true };
   }
 
-  // 6. Unknown
+  // 7. Unknown
   return { matched: false, normalized: key };
 }

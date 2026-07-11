@@ -7,5 +7,9 @@
     "avocado oil": false,
     "dragon fruit": false
   },
+  "source": {
+    "avocado oil": "unknown",
+    "dragon fruit": "unknown"
+  },
   "finalList": "avocado oil, dragon fruit"
 }

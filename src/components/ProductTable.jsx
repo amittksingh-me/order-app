@@ -10,11 +10,11 @@ export default function ProductTable({ rows, actions, editingId, renderEditor, r
       <table className="product-table">
         <thead>
           <tr>
+            {actions && <th aria-label="actions" />}
             <th>Brand</th>
             <th>Product</th>
             <th>Size</th>
             <th>Qty</th>
-            {actions && <th aria-label="actions" />}
           </tr>
         </thead>
         <tbody>
@@ -25,11 +25,11 @@ export default function ProductTable({ rows, actions, editingId, renderEditor, r
               </tr>
             ) : (
               <tr key={r.id} className={rowClass?.(r) || ""}>
-                <td>{r.brand || "—"}</td>
-                <td className="pc-name">{r.product}</td>
-                <td>{r.size || "—"}</td>
-                <td>{r.qty}</td>
                 {actions && <td className="row-actions">{actions(r)}</td>}
+                <td data-label="Brand">{r.brand || "—"}</td>
+                <td className="pc-name" data-label="">{r.product}</td>
+                <td data-label="Size">{r.size || "—"}</td>
+                <td data-label="Qty">{r.qty}</td>
               </tr>
             )
           )}

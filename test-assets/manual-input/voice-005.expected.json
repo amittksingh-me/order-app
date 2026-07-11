@@ -1,21 +1,21 @@
 {
   "normalized": [
-    "olive oil",
-    "anda",
-    "paneer",
-    "dudh"
+    "borges extra virgin olive oil 250 ml",
+    "fresho farm eggs 6 pc",
+    "milky mist paneer 200 g",
+    "nandini shubham milk 500 ml"
   ],
   "matched": {
-    "olive oil": true,
-    "anda": true,
-    "paneer": true,
-    "dudh": true
+    "borges extra virgin olive oil 250 ml": true,
+    "fresho farm eggs 6 pc": true,
+    "milky mist paneer 200 g": true,
+    "nandini shubham milk 500 ml": true
   },
   "source": {
-    "olive oil": "user-memory",
-    "anda": "user-memory",
-    "paneer": "builtin",
-    "dudh": "user-memory"
+    "borges extra virgin olive oil 250 ml": "user-memory",
+    "fresho farm eggs 6 pc": "user-memory",
+    "milky mist paneer 200 g": "builtin",
+    "nandini shubham milk 500 ml": "user-memory"
   },
   "finalList": "Borges Extra Virgin Olive Oil 250 ml, Fresho Farm Eggs 6 pcs, Milky Mist Paneer 200 g, Nandini Shubham Milk 500 ml"
 }

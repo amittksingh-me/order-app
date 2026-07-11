@@ -7,6 +7,12 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
   const silenceTimerRef = useRef(null);
   const transcriptAccumRef = useRef([]);
   const preRecordingTextRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const handleClear = () => {
+    onClear();
+    textareaRef.current?.focus();
+  };
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -101,6 +107,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
     <section className="panel input-panel">
       <div className="input-textarea-wrap">
         <textarea
+          ref={textareaRef}
           className="item-input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -116,7 +123,9 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
           >
             {listening ? (
               <span className="mic-icon">
-                <span className="mic-pulse" />
+                <span className="mic-wave">
+                  <span /><span /><span />
+                </span>
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3" />
                   <path d="M5 10a7 7 0 0 0 14 0" />
@@ -132,8 +141,8 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
             )}
           </button>
         )}
-        {value && (
-          <button className="clear-btn" onClick={onClear} type="button" title="Clear list">
+{value && (
+            <button className="clear-btn" onClick={handleClear} type="button" title="Clear list">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />

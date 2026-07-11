@@ -3,7 +3,7 @@
 
 import { normalizeItem } from "./normalize.js";
 import { detectDuplicates } from "./duplicate.js";
-import { lookupProduct } from "./lookup.js";
+import { lookupProduct, prefixMatchUserMemory } from "./lookup.js";
 import { buildDisplayName } from "./product.js";
 import { parseTranscript } from "./voice.js";
 
@@ -24,6 +24,8 @@ function expandLines(lines, builtin, userMemory) {
     if (!key) continue;
     if (lookupProduct(key, builtin, userMemory).matched) {
       out.push(line);
+    } else if (prefixMatchUserMemory(key, userMemory)) {
+      out.push(line);
     } else if (isNoise(key, brands, sizeWords)) {
       continue;
     } else {
@@ -40,11 +42,27 @@ function expandLines(lines, builtin, userMemory) {
           if (compressed) {
             out.push(compressed);
           } else {
-            const anyMatch = clean.some((s) =>
+            const matched = clean.filter((s) =>
               lookupProduct(normalizeItem(s), builtin, userMemory).matched
             );
-            if (anyMatch) {
+            const unmatched = clean.filter((s) =>
+              !lookupProduct(normalizeItem(s), builtin, userMemory).matched
+            );
+            if (unmatched.length === 0) {
               out.push(...clean);
+            } else if (matched.length > 0) {
+              const productKeys = new Set();
+              for (const s of matched) {
+                const look = lookupProduct(normalizeItem(s), builtin, userMemory);
+                if (look.matched) {
+                  productKeys.add(`${look.product.product}||${look.product.brand}||${look.product.size}`);
+                }
+              }
+              if (productKeys.size === 1) {
+                out.push(line);
+              } else {
+                out.push(...clean);
+              }
             } else {
               out.push(line);
             }
@@ -108,7 +126,9 @@ function compressToMatch(clean, builtin, userMemory) {
   for (const { raw, key } of normalized) {
     const look = lookupProduct(key, builtin, userMemory);
     if (look.matched) {
-      const prodName = normalizeItem(look.product.product || "");
+      const prodName = normalizeItem(
+        buildDisplayName(look.product.brand, look.product.product, look.product.size)
+      );
       if (!prodName) continue;
       const others = normalized.filter((n) => n.raw !== raw);
       if (others.every((n) => prodName.includes(n.key))) return raw;
@@ -125,19 +145,26 @@ export function enrichItems(lines, builtin, userMemory) {
   const groups = detectDuplicates(expanded);
   const result = [];
   groups.forEach((g) => {
-    const look = lookupProduct(g.key, builtin, userMemory);
+    let look = lookupProduct(g.key, builtin, userMemory);
+    if (!look.matched) {
+      const prefixed = prefixMatchUserMemory(g.key, userMemory);
+      if (prefixed) {
+        look = { matched: true, source: "user-memory", product: prefixed, normalized: g.key };
+      }
+    }
+    const preferredProduct = look.matched
+      ? buildDisplayName(look.product.brand, look.product.product, look.product.size)
+      : g.key;
     const base = {
       id: nextId(),
       input: g.originals[0] || g.key,
-      normalized: g.key,
+      normalized: look.matched ? normalizeItem(preferredProduct) : g.key,
       quantity: g.count > 1 ? g.count : look.matched && look.product.defaultQty ? look.product.defaultQty : g.count,
       matched: look.matched,
       source: look.matched ? look.source : "unknown",
       fuzzy: !!look.fuzzy,
       product: look.matched ? look.product.product : "",
-      preferredProduct: look.matched
-        ? buildDisplayName(look.product.brand, look.product.product, look.product.size)
-        : g.key,
+      preferredProduct,
       brand: look.matched ? look.product.brand : "",
       size: look.matched ? look.product.size : "",
       alternatives: look.matched ? look.product.alternatives || [] : [],
@@ -146,7 +173,22 @@ export function enrichItems(lines, builtin, userMemory) {
     };
     result.push(base);
   });
-  return sortItems(result);
+  const sorted = sortItems(result);
+  // Filter word-leaks: unknown single-word items that are embedded in matched product names
+  const matchedNames = new Set(
+    sorted.filter(i => i.matched).map(i => normalizeItem(i.preferredProduct))
+  );
+  return sorted.filter(i => {
+    if (i.matched) return true;
+    const key = i.normalized;
+    if (key.includes(" ")) return true;
+    for (const name of matchedNames) {
+      if (name === key) continue;
+      const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(`\\b${escaped}\\b`).test(name)) return false;
+    }
+    return true;
+  });
 }
 
 function sortItems(items) {

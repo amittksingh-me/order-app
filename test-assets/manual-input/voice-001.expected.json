@@ -1,18 +1,18 @@
 {
   "normalized": [
     "andaa",
-    "paneer",
-    "dudh"
+    "milky mist paneer 200 g",
+    "nandini shubham milk 500 ml"
   ],
   "matched": {
     "andaa": false,
-    "paneer": true,
-    "dudh": true
+    "milky mist paneer 200 g": true,
+    "nandini shubham milk 500 ml": true
   },
   "source": {
     "andaa": "unknown",
-    "paneer": "builtin",
-    "dudh": "user-memory"
+    "milky mist paneer 200 g": "builtin",
+    "nandini shubham milk 500 ml": "user-memory"
   },
   "finalList": "andaa, Milky Mist Paneer 200 g, Nandini Shubham Milk 500 ml"
 }

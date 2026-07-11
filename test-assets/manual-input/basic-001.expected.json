@@ -1,13 +1,18 @@
 {
   "normalized": [
-    "onion",
-    "potato",
-    "paneer"
+    "fresho onion 1 kg",
+    "fresho potato 1 kg",
+    "milky mist paneer 200 g"
   ],
   "matched": {
-    "onion": true,
-    "potato": true,
-    "paneer": true
+    "fresho onion 1 kg": true,
+    "fresho potato 1 kg": true,
+    "milky mist paneer 200 g": true
+  },
+  "source": {
+    "fresho onion 1 kg": "builtin",
+    "fresho potato 1 kg": "builtin",
+    "milky mist paneer 200 g": "builtin"
   },
   "finalList": "fresho Onion 1 kg, fresho Potato 1 kg, Milky Mist Paneer 200 g"
 }

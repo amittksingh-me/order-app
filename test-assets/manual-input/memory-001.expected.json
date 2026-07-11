@@ -1,12 +1,12 @@
 {
   "normalized": [
-    "potato"
+    "home 2 kg"
   ],
   "matched": {
-    "potato": true
+    "home 2 kg": true
   },
-  "finalList": "Home 2 kg",
   "source": {
-    "potato": "user-memory"
-  }
+    "home 2 kg": "user-memory"
+  },
+  "finalList": "Home 2 kg"
 }

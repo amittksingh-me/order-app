@@ -50,6 +50,7 @@ export default function App() {
   const [items, setItems] = useState([]);
   const [enriched, setEnriched] = useState(false);
   const [userMemory, setUserMemory] = useState({});
+  const [statusMsg, setStatusMsg] = useState("");
   const [tab, setTab] = useState("main"); // main | settings
   const [lastSync, setLastSync] = useState(null);
   const [syncUrl, setSyncUrl] = useState(() => {
@@ -171,6 +172,8 @@ export default function App() {
     } catch {
       // clipboard write failed silently
     }
+    setStatusMsg(`Ready! ${result.filter(i => i.matched).length} items matched, ${result.filter(i => !i.matched).length} unknown`);
+    setTimeout(() => setStatusMsg(""), 3000);
   }
 
   function handleDeleteItem(id) {
@@ -186,6 +189,7 @@ export default function App() {
   }
 
   async function handleClearInput() {
+    if (!window.confirm("Clear the entire list?")) return;
     setRawInput("");
     setEnriched(false);
     setItems([]);
@@ -286,6 +290,7 @@ export default function App() {
             onLaunch={handleLaunch}
             onClear={handleClearInput}
           />
+          {statusMsg && <p className="status-msg">{statusMsg}</p>}
 
           {enriched && (
             <ReviewPanel
