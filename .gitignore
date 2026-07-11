@@ -25,3 +25,4 @@ dist-ssr
 
 # Local BigBasket order exports (personal purchase history — keep out of git)
 order_jsons/
+products.csv
