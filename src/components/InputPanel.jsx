@@ -72,8 +72,8 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
         placeholder={"Type or speak items, one per line...\n\ne.g.\nmilk\nbread\neggs\ntomato"}
         rows={8}
       />
-      {supported && (
-        <div className="mic-row">
+      <div className="input-actions">
+        {supported && (
           <button
             className={`mic-btn ${listening ? "listening" : ""}`}
             onClick={toggleMic}
@@ -97,10 +97,8 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
               </svg>
             )}
           </button>
-          {listening && <span className="mic-status">Listening… tap mic to stop</span>}
-        </div>
-      )}
-      <div className="input-actions">
+        )}
+        {listening && <span className="mic-status">Listening…</span>}
         <button className="btn-primary" onClick={onEnrich} type="button">
           Enrich &amp; Copy
         </button>
