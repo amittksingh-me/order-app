@@ -120,12 +120,8 @@ export default function App() {
   }
 
   async function handleLaunch() {
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const url = isAndroid
-      ? "intent://www.bigbasket.com#Intent;scheme=https;package=com.bigbasket.mobileapp;end"
-      : "https://www.bigbasket.com";
-    window.open(url, "_blank");
     await doEnrich();
+    window.location.href = "https://www.bigbasket.com";
   }
 
   async function doEnrich() {
