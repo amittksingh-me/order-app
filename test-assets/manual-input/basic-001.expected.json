@@ -1,13 +1,13 @@
 {
   "normalized": [
-    "potato",
     "onion",
+    "potato",
     "paneer"
   ],
   "matched": {
-    "potato": true,
     "onion": true,
+    "potato": true,
     "paneer": true
   },
-  "finalList": "fresho Potato 1 kg, fresho Onion 1 kg, Milky Mist Paneer 200 g"
+  "finalList": "fresho Onion 1 kg, fresho Potato 1 kg, Milky Mist Paneer 200 g"
 }

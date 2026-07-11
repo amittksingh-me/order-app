@@ -1,18 +1,18 @@
 {
   "normalized": [
-    "dudh",
     "andaa",
-    "paneer"
+    "paneer",
+    "dudh"
   ],
   "matched": {
-    "dudh": true,
     "andaa": true,
-    "paneer": true
+    "paneer": true,
+    "dudh": true
   },
   "source": {
-    "dudh": "user-memory",
     "andaa": "user-memory",
-    "paneer": "builtin"
+    "paneer": "builtin",
+    "dudh": "user-memory"
   },
-  "finalList": "Nandini Shubham Milk 500 ml, Fresho Farm Eggs 6 pcs, Milky Mist Paneer 200 g"
+  "finalList": "Fresho Farm Eggs 6 pcs, Milky Mist Paneer 200 g, Nandini Shubham Milk 500 ml"
 }

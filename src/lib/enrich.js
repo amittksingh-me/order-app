@@ -70,7 +70,19 @@ export function enrichItems(lines, builtin, userMemory) {
     };
     result.push(base);
   });
-  return result;
+  return sortItems(result);
+}
+
+function sortItems(items) {
+  return items.sort((a, b) => {
+    if (a.matched !== b.matched) return a.matched ? 1 : -1;
+    const cmp = (x, y) => x < y ? -1 : x > y ? 1 : 0;
+    return (
+      cmp((a.brand || "").toLowerCase(), (b.brand || "").toLowerCase()) ||
+      cmp((a.product || "").toLowerCase(), (b.product || "").toLowerCase()) ||
+      cmp((a.size || "").toLowerCase(), (b.size || "").toLowerCase())
+    );
+  });
 }
 
 // Re-run enrichment for one item after the user edits it.

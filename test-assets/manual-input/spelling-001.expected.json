@@ -1,15 +1,15 @@
 {
   "normalized": [
-    "potatto",
-    "tomato",
     "bread",
-    "onionn"
+    "tomato",
+    "onionn",
+    "potatto"
   ],
   "matched": {
-    "potatto": true,
-    "tomato": true,
     "bread": true,
-    "onionn": true
+    "tomato": true,
+    "onionn": true,
+    "potatto": true
   },
-  "finalList": "fresho Potato 1 kg, fresho Hybrid Tomato 500 g, Britannia Breakfast Slice Bread 450 g, fresho Onion 1 kg"
+  "finalList": "Britannia Breakfast Slice Bread 450 g, fresho Hybrid Tomato 500 g, fresho Onion 1 kg, fresho Potato 1 kg"
 }
