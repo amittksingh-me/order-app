@@ -13,27 +13,43 @@ function nextId() {
   return `item-${counter}-${Date.now()}`;
 }
 
-// lines: string[] (raw input, one per line)
-// builtin: products.json object
-// userMemory: object keyed by normalized key
-export function enrichItems(lines, builtin, userMemory) {
-  const groups = detectDuplicates(lines);
-  const result = [];
-  groups.forEach((g) => {
-    const look = lookupProduct(g.key, builtin, userMemory);
-    if (!look.matched && g.originals[0]) {
-      const splits = parseTranscript(g.originals[0], builtin, userMemory);
+// Flatten input lines: lines that don't match are fed through parseTranscript
+// to split into sub-phrases. This ensures dedup happens AFTER splitting.
+function expandLines(lines, builtin, userMemory) {
+  const out = [];
+  for (const line of lines) {
+    const key = normalizeItem(line);
+    if (!key) continue;
+    if (lookupProduct(key, builtin, userMemory).matched) {
+      out.push(line);
+    } else {
+      const splits = parseTranscript(line, builtin, userMemory);
       if (splits.length > 1) {
         const anyMatch = splits.some((s) =>
           lookupProduct(normalizeItem(s), builtin, userMemory).matched
         );
         if (anyMatch) {
-          const subItems = enrichItems(splits, builtin, userMemory);
-          result.push(...subItems);
-          return;
+          out.push(...splits);
+        } else {
+          out.push(line);
         }
+      } else {
+        out.push(line);
       }
     }
+  }
+  return out;
+}
+
+// lines: string[] (raw input, one per line)
+// builtin: products.json object
+// userMemory: object keyed by normalized key
+export function enrichItems(lines, builtin, userMemory) {
+  const expanded = expandLines(lines, builtin, userMemory);
+  const groups = detectDuplicates(expanded);
+  const result = [];
+  groups.forEach((g) => {
+    const look = lookupProduct(g.key, builtin, userMemory);
     const base = {
       id: nextId(),
       input: g.originals[0] || g.key,

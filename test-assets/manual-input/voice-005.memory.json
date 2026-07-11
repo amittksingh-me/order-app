@@ -1,0 +1,26 @@
+{
+  "nandini shubham milk 500 ml bakery cakes dairy": {
+    "product": "Shubham Milk",
+    "brand": "Nandini",
+    "size": "500 ml",
+    "defaultQty": 1,
+    "category": "bakery, cakes & dairy",
+    "keywords": ["milk", "doodh", "dudh"]
+  },
+  "fresho farm eggs 6 pcs eggs meat fish": {
+    "product": "Farm Eggs",
+    "brand": "Fresho",
+    "size": "6 pcs",
+    "defaultQty": 1,
+    "category": "eggs, meat & fish",
+    "keywords": ["anda", "andaa", "eggs"]
+  },
+  "borges extra virgin olive oil 250 ml gourmet world food": {
+    "product": "Extra Virgin Olive Oil",
+    "brand": "Borges",
+    "size": "250 ml",
+    "defaultQty": 1,
+    "category": "gourmet & world food",
+    "keywords": ["olive oil"]
+  }
+}
