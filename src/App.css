@@ -145,6 +145,75 @@ button {
   color: var(--muted);
 }
 
+.mic-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  min-height: 32px;
+}
+
+.mic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--panel);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.mic-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.mic-btn.listening {
+  border-color: #e53935;
+  color: #e53935;
+  background: #fce4e4;
+}
+
+.mic-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mic-pulse {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #e53935;
+  animation: mic-pulse 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mic-pulse {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.mic-status {
+  font-size: 12px;
+  color: var(--muted);
+  animation: mic-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes mic-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .input-actions {
   display: flex;
   gap: 10px;
