@@ -121,55 +121,49 @@ button {
 }
 
 /* ---------- Input ---------- */
+.input-textarea-wrap {
+  position: relative;
+}
+
 .item-input {
   width: 100%;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  padding: 14px 40px 14px 16px;
   font-size: 16px;
   line-height: 1.5;
   resize: vertical;
-  background: #fafafa;
+  background: #fff;
   color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .item-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-  background: #fff;
+  box-shadow: 0 0 0 3px var(--accent-soft), inset 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .item-input::placeholder {
   color: var(--muted);
 }
 
-.input-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-}
-.input-actions .btn-primary,
-.input-actions .btn-secondary {
-  flex: 1;
-}
-
 .mic-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1.5px solid var(--border);
   background: var(--panel);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
-  flex-shrink: 0;
-  position: relative;
+  z-index: 1;
 }
 
 .mic-btn:hover {
@@ -193,8 +187,8 @@ button {
 
 .mic-pulse {
   position: absolute;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 2px solid #e53935;
   animation: mic-pulse 1.5s ease-out infinite;
@@ -207,15 +201,30 @@ button {
 }
 
 .mic-status {
-  font-size: 12px;
+  position: absolute;
+  bottom: 12px;
+  right: 44px;
+  font-size: 11px;
   color: var(--muted);
   animation: mic-blink 1.5s ease-in-out infinite;
   white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @keyframes mic-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+.input-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.input-actions .btn-primary,
+.input-actions .btn-secondary {
+  flex: 1;
 }
 
 .btn-primary {
@@ -224,8 +233,8 @@ button {
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 14px 20px;
-  font-size: 15px;
+  padding: 12px 20px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.2s;
@@ -244,7 +253,7 @@ button {
   color: var(--text);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  padding: 12px 16px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -731,9 +740,13 @@ button {
 }
 
 .sync-summary::before {
-  content: "\25B6";
-  font-size: 10px;
-  color: var(--muted);
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--muted);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
   margin-right: 8px;
   transition: transform 0.15s;
 }
