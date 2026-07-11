@@ -200,22 +200,6 @@ button {
   100% { transform: scale(1.8); opacity: 0; }
 }
 
-.mic-status {
-  position: absolute;
-  bottom: 12px;
-  right: 44px;
-  font-size: 11px;
-  color: var(--muted);
-  animation: mic-blink 1.5s ease-in-out infinite;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 1;
-}
-
-@keyframes mic-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
 
 .input-actions {
   display: flex;

@@ -6,6 +6,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
   const onChangeRef = useRef(onChange);
   const silenceTimerRef = useRef(null);
   const transcriptAccumRef = useRef([]);
+  const preRecordingTextRef = useRef(null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -27,15 +28,24 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
 
     recog.onresult = (event) => {
       let currentFinal = "";
+      let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
           currentFinal += (currentFinal ? " " : "") + result[0].transcript;
+        } else {
+          interim += (interim ? " " : "") + result[0].transcript;
         }
       }
       if (currentFinal) {
         transcriptAccumRef.current.push(currentFinal);
       }
+
+      // Push live transcript into the textarea via parent state
+      const finals = transcriptAccumRef.current.join(" ");
+      const live = finals + (interim ? " " + interim : "");
+      const pre = preRecordingTextRef.current;
+      onChangeRef.current(pre ? pre + "\n" + live : live);
 
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = setTimeout(() => {
@@ -53,12 +63,11 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
       }
       const acc = transcriptAccumRef.current;
       transcriptAccumRef.current = [];
+      const pre = preRecordingTextRef.current;
+      preRecordingTextRef.current = null;
       if (acc.length > 0) {
-        const text = acc.join(" ");
-        onChangeRef.current((prev) => {
-          const trimmed = prev.trimEnd();
-          return trimmed ? trimmed + "\n" + text.trim() : text.trim();
-        });
+        const text = acc.join(" ").trim();
+        onChangeRef.current(pre ? pre + "\n" + text : text);
       }
     };
 
@@ -77,11 +86,13 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
       recog.stop();
       setListening(false);
     } else {
+      preRecordingTextRef.current = value;
       try {
         recog.start();
         setListening(true);
       } catch {
         setListening(false);
+        preRecordingTextRef.current = null;
       }
     }
   }
@@ -121,7 +132,6 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
             )}
           </button>
         )}
-        {listening && <span className="mic-status">Listening…</span>}
       </div>
       <div className="input-actions">
         <button className="btn-primary" onClick={onEnrich} type="button">
