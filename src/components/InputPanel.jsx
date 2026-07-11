@@ -4,6 +4,8 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
   const onChangeRef = useRef(onChange);
+  const silenceTimerRef = useRef(null);
+  const transcriptAccumRef = useRef([]);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -12,6 +14,8 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
   const supported = !!SpeechRecognition;
+
+  const SILENCE_MS = 2000;
 
   useEffect(() => {
     if (!supported) return;
@@ -22,28 +26,47 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch }) {
     recog.lang = "en-IN";
 
     recog.onresult = (event) => {
-      let final = "";
+      let currentFinal = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          final += (final ? " " : "") + result[0].transcript;
+          currentFinal += (currentFinal ? " " : "") + result[0].transcript;
         }
       }
-      if (final) {
-        onChangeRef.current((prev) => {
-          const trimmed = prev.trimEnd();
-          return trimmed ? trimmed + "\n" + final.trim() : final.trim();
-        });
+      if (currentFinal) {
+        transcriptAccumRef.current.push(currentFinal);
       }
+
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => {
+        recog.stop();
+      }, SILENCE_MS);
     };
 
     recog.onerror = () => setListening(false);
-    recog.onend = () => setListening(false);
+
+    recog.onend = () => {
+      setListening(false);
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+      const acc = transcriptAccumRef.current;
+      transcriptAccumRef.current = [];
+      if (acc.length > 0) {
+        const text = acc.join(" ");
+        onChangeRef.current((prev) => {
+          const trimmed = prev.trimEnd();
+          return trimmed ? trimmed + "\n" + text.trim() : text.trim();
+        });
+      }
+    };
 
     recognitionRef.current = recog;
 
     return () => {
       recog.abort();
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     };
   }, [supported]);
 
