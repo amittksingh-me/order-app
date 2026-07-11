@@ -46,6 +46,35 @@ export default function App() {
   const [enriched, setEnriched] = useState(false);
   const [userMemory, setUserMemory] = useState({});
   const [tab, setTab] = useState("main"); // main | settings
+  const [lastSync, setLastSync] = useState(null);
+  const [syncUrl, setSyncUrl] = useState(() => {
+    try {
+      return localStorage.getItem(SHEET_URL_KEY) || "";
+    } catch {
+      return "";
+    }
+  });
+
+  function ago(ts) {
+    if (!ts) return "";
+    const min = Math.floor((Date.now() - ts) / 60000);
+    if (min < 1) return "just now";
+    if (min === 1) return "1m ago";
+    if (min < 60) return `${min}m ago`;
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return m ? `${h}h ${m}m ago` : `${h}h ago`;
+  }
+
+  async function handleSyncNow() {
+    try {
+      const url = localStorage.getItem(SHEET_URL_KEY);
+      if (!url) return;
+      const result = await syncSheet(url);
+      setUserMemory(result.memory);
+      setLastSync(Date.now());
+    } catch {}
+  }
 
   useEffect(() => {
     getAllMemory()
@@ -54,11 +83,32 @@ export default function App() {
         try {
           const url = localStorage.getItem(SHEET_URL_KEY);
           if (url) {
-            syncSheet(url).then((res) => setUserMemory(res.memory)).catch(() => {});
+            syncSheet(url)
+              .then((res) => {
+                setUserMemory(res.memory);
+                setLastSync(Date.now());
+              })
+              .catch(() => {});
           }
         } catch {}
       })
       .catch(() => setUserMemory({}));
+
+    const id = setInterval(() => {
+      try {
+        const url = localStorage.getItem(SHEET_URL_KEY);
+        if (url) {
+          syncSheet(url)
+            .then((res) => {
+              setUserMemory(res.memory);
+              setLastSync(Date.now());
+            })
+            .catch(() => {});
+        }
+      } catch {}
+    }, 300000);
+
+    return () => clearInterval(id);
   }, []);
 
   async function handleEnrich() {
@@ -146,6 +196,11 @@ export default function App() {
             Memory
           </button>
         </nav>
+        {syncUrl && (
+          <button className="sync-pill" onClick={handleSyncNow} title="Sync now">
+            ↻ {ago(lastSync)}
+          </button>
+        )}
       </header>
 
       {tab === "main" ? (
@@ -154,7 +209,6 @@ export default function App() {
             value={rawInput}
             onChange={setRawInput}
             onEnrich={handleEnrich}
-            disabled={enriched && items.length > 0}
           />
 
           {enriched && (
@@ -179,6 +233,10 @@ export default function App() {
           onEdit={handleEditMemory}
           onAdd={handleAddMemory}
           onSync={setUserMemory}
+          lastSync={lastSync}
+          syncUrl={syncUrl}
+          onUrlChange={setSyncUrl}
+
         />
       )}
       <p className="foot-hint">

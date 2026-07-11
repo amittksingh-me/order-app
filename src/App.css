@@ -603,28 +603,76 @@ button {
   border-top: 1px solid var(--border);
 }
 
-/* ---------- Sync panel ---------- */
-.sync-panel {
-  margin-top: 20px;
-  padding: 0;
+/* ---------- Sync pill in header ---------- */
+.sync-pill {
+  background: var(--accent-soft);
+  border: none;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  margin-left: auto;
+}
+
+.sync-pill:hover {
+  background: #dddaff;
+}
+
+/* ---------- Sync details in Memory panel ---------- */
+.sync-details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
   overflow: hidden;
+  background: #fafafa;
 }
 
 .sync-summary {
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 16px 20px;
-  color: var(--accent);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   user-select: none;
+  list-style: none;
 }
 
 .sync-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sync-summary::before {
+  content: "\25B6";
+  font-size: 10px;
   color: var(--muted);
+  margin-right: 8px;
+  transition: transform 0.15s;
+}
+
+.sync-details[open] > .sync-summary::before {
+  transform: rotate(90deg);
+}
+
+.sync-summary-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sync-summary-status {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: auto;
+  margin-right: 4px;
 }
 
 .sync-body {
-  padding: 0 20px 20px;
+  padding: 0 14px 14px;
   border-top: 1px solid var(--border);
 }
 
@@ -633,25 +681,36 @@ button {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin: 14px 0 6px;
+  margin: 12px 0 6px;
+}
+
+.sync-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sync-row .btn-primary {
+  flex-shrink: 0;
+  padding: 11px 16px;
+  font-size: 14px;
 }
 
 .sync-input {
-  width: 100%;
+  flex: 1;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 11px 14px;
+  padding: 10px 12px;
   font-size: 14px;
-  background: #fafafa;
+  background: #fff;
   color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .sync-input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
-  background: #fff;
 }
 
 .sync-input::placeholder {
@@ -659,21 +718,10 @@ button {
   font-size: 13px;
 }
 
-.sync-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 12px;
-}
-
-.sync-actions .btn-primary {
-  flex: 1;
-}
-
 .sync-status {
   font-size: 13px;
   font-weight: 500;
-  margin: 10px 0 0;
+  margin-top: 10px;
 }
 
 .sync-success {

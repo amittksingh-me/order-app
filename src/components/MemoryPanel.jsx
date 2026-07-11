@@ -15,6 +15,9 @@ export default function MemoryPanel({
   onEdit,
   onAdd,
   onSync,
+  lastSync,
+  syncUrl,
+  onUrlChange,
 }) {
   const [view, setView] = useState("builtin"); // builtin | learned
   const [query, setQuery] = useState("");
@@ -184,6 +187,13 @@ export default function MemoryPanel({
         </button>
       </div>
 
+      <SyncPanel
+        onSync={onSync}
+        lastSync={lastSync}
+        syncUrl={syncUrl}
+        onUrlChange={onUrlChange}
+      />
+
       <div className="search-box">
         <input
           className="search-input"
@@ -269,8 +279,6 @@ export default function MemoryPanel({
           </button>
         </div>
       )}
-
-      <SyncPanel onSync={onSync} />
 
       <div className="settings-actions">
         <button className="btn-secondary" type="button" onClick={onExport}>

@@ -16,11 +16,10 @@ function saveUrl(url) {
   } catch {}
 }
 
-export default function SyncPanel({ onSync }) {
+export default function SyncPanel({ onSync, lastSync, syncUrl, onUrlChange }) {
   const [url, setUrl] = useState(loadUrl);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(!loadUrl());
 
   async function handleSync() {
     const trimmed = url.trim();
@@ -31,6 +30,7 @@ export default function SyncPanel({ onSync }) {
     setLoading(true);
     setStatus(null);
     saveUrl(trimmed);
+    onUrlChange(trimmed);
     try {
       const result = await syncSheet(trimmed);
       setStatus({ type: "success", message: `Synced ${result.count} products` });
@@ -46,6 +46,7 @@ export default function SyncPanel({ onSync }) {
     setUrl("");
     setStatus(null);
     saveUrl("");
+    onUrlChange("");
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
@@ -53,30 +54,33 @@ export default function SyncPanel({ onSync }) {
 
   return (
     <details
-      className="panel sync-panel"
-      open={expanded}
-      onToggle={(e) => setExpanded(e.currentTarget.open)}
+      className="sync-details"
+      open={!syncUrl}
     >
-      <summary className="sync-summary">Google Sheets Sync</summary>
+      <summary className="sync-summary">
+        <span className="sync-summary-title">Sheets Sync</span>
+        <span className="sync-summary-status">
+          {lastSync && `synced ${ago(lastSync)}`}
+        </span>
+      </summary>
 
       <div className="sync-body">
         <label className="sync-label">Sheet CSV URL</label>
-        <input
-          className="sync-input"
-          type="url"
-          placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-
-        <div className="sync-actions">
+        <div className="sync-row">
+          <input
+            className="sync-input"
+            type="url"
+            placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
           <button
             className="btn-primary"
             type="button"
             onClick={handleSync}
             disabled={loading}
           >
-            {loading ? "Syncing\u2026" : "Sync from Sheet"}
+            {loading ? "Syncing" : "Sync"}
           </button>
           {url && (
             <button className="btn-link" type="button" onClick={handleClear}>
@@ -109,11 +113,22 @@ export default function SyncPanel({ onSync }) {
             </li>
             <li>Click <strong>Publish</strong> and copy the generated URL</li>
             <li>
-              Paste it above and tap <strong>Sync from Sheet</strong>
+              Paste it above and tap <strong>Sync</strong>
             </li>
           </ol>
         </details>
       </div>
     </details>
   );
+}
+
+function ago(ts) {
+  if (!ts) return "";
+  const min = Math.floor((Date.now() - ts) / 60000);
+  if (min < 1) return "just now";
+  if (min === 1) return "1m ago";
+  if (min < 60) return `${min}m ago`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}h ${m}m ago` : `${h}h ago`;
 }
