@@ -1,0 +1,11 @@
+{
+  "normalized": [
+    "avocado oil",
+    "dragon fruit"
+  ],
+  "matched": {
+    "avocado oil": false,
+    "dragon fruit": false
+  },
+  "finalList": "avocado oil\ndragon fruit"
+}

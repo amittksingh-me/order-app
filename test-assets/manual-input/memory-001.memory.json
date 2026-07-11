@@ -1,0 +1,10 @@
+{
+  "potato": {
+    "preferredProduct": "My Favourite Potato 2 kg",
+    "brand": "Home",
+    "size": "2 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "category": "Vegetables"
+  }
+}

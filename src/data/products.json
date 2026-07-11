@@ -1,0 +1,555 @@
+{
+  "bay leaf tej patta": {
+    "product": "Organic Bay Leaf",
+    "brand": "BB Royal",
+    "size": "50 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "bay leaf",
+      "tej patta",
+      "bay leaves",
+      "tej patta leaves"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "black pepper whole": {
+    "product": "Black Pepper Whole",
+    "brand": "bb Popular",
+    "size": "50 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "black pepper",
+      "pepper",
+      "kali mirch",
+      "kaali mirch",
+      "whole pepper",
+      "sabut kali mirch"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "bread breakfast slice": {
+    "product": "Breakfast Slice Bread",
+    "brand": "Britannia",
+    "size": "450 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "bread",
+      "bread slice",
+      "sandwich bread",
+      "slice bread",
+      "breakfast bread"
+    ],
+    "category": "Bakery, Cakes & Dairy"
+  },
+  "carrot orange": {
+    "product": "Orange Carrot",
+    "brand": "fresho!",
+    "size": "500 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "carrot",
+      "gajar",
+      "orange carrot",
+      "carrots"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "chilli green long medium": {
+    "product": "Green Chilli Long Medium",
+    "brand": "fresho!",
+    "size": "100 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "green chilli",
+      "green chili",
+      "hari mirch",
+      "chilli",
+      "chili"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "coriander leaves without root": {
+    "product": "Coriander Leaves Without Root",
+    "brand": "fresho!",
+    "size": "250 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "coriander",
+      "coriander leaves",
+      "dhaniya",
+      "cilantro"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "cucumber": {
+    "product": "Cucumber",
+    "brand": "fresho!",
+    "size": "1 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "cucumber",
+      "kheera",
+      "kakdi"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "cumin jeera whole": {
+    "product": "Cumin Jeera Whole",
+    "brand": "BB Royal",
+    "size": "200 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "cumin",
+      "jeera",
+      "jira",
+      "whole cumin",
+      "sabut jeera"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "durum wheat pasta macaroni": {
+    "product": "Durum Wheat Macaroni Pasta",
+    "brand": "Borges",
+    "size": "350 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "pasta",
+      "macaroni",
+      "durum pasta",
+      "macaroni pasta"
+    ],
+    "category": "Snacks & Branded Foods"
+  },
+  "elbow macaroni pasta durum wheat": {
+    "product": "Elbow Macaroni Pasta",
+    "brand": "Disano",
+    "size": "400 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "macaroni",
+      "elbow macaroni",
+      "pasta",
+      "elbow pasta"
+    ],
+    "category": "Gourmet & World Food"
+  },
+  "farm fresh curd dahi": {
+    "product": "Farm Fresh Curd",
+    "brand": "Milky Mist",
+    "size": "1 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "curd",
+      "dahi",
+      "yogurt",
+      "yoghurt",
+      "thayir"
+    ],
+    "category": "Bakery, Cakes & Dairy"
+  },
+  "frozen green pea": {
+    "product": "Frozen Green Peas",
+    "brand": "Safal",
+    "size": "1 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "green peas",
+      "peas",
+      "matar",
+      "frozen peas"
+    ],
+    "category": "Snacks & Branded Foods"
+  },
+  "garlic": {
+    "product": "Garlic",
+    "brand": "fresho!",
+    "size": "250 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "garlic",
+      "lahsun",
+      "lasun"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "ginger": {
+    "product": "Ginger",
+    "brand": "fresho!",
+    "size": "250 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "ginger",
+      "adrak",
+      "inji",
+      "fresh ginger"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "gold standard classic basmati rice": {
+    "product": "Gold Standard Classic Basmati Rice",
+    "brand": "India Gate",
+    "size": "5 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "basmati rice",
+      "rice",
+      "long grain rice",
+      "chawal",
+      "basmati"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "gram flour": {
+    "product": "Gram Flour",
+    "brand": "Sri Bhagyalakshmi",
+    "size": "500 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "gram flour",
+      "besan",
+      "chickpea flour",
+      "chana flour"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "gram flour fine besan": {
+    "product": "Fine Besan",
+    "brand": "Tata Sampann",
+    "size": "500 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "besan",
+      "fine besan",
+      "gram flour",
+      "chickpea flour"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "green chilli small": {
+    "product": "Green Chilli Small",
+    "brand": "fresho!",
+    "size": "250 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "green chilli",
+      "green chili",
+      "hari mirch",
+      "small chilli"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "green pea": {
+    "product": "Green Peas",
+    "brand": "fresho!",
+    "size": "250 g",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "green peas",
+      "peas",
+      "matar",
+      "fresh peas"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "hazelnut cocoa spread": {
+    "product": "Hazelnut Cocoa Spread",
+    "brand": "Nutella",
+    "size": "350 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "nutella",
+      "hazelnut spread",
+      "cocoa spread",
+      "chocolate spread"
+    ],
+    "category": "Gourmet & World Food"
+  },
+  "idly dosa batter": {
+    "product": "Idly Dosa Batter",
+    "brand": "iD",
+    "size": "1 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "idli batter",
+      "idly batter",
+      "dosa batter",
+      "idli dosa batter"
+    ],
+    "category": "Snacks & Branded Foods"
+  },
+  "kabuli chana": {
+    "product": "Organic Kabuli Chana",
+    "brand": "24 Mantra Organic",
+    "size": "500 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "kabuli chana",
+      "chole",
+      "chickpeas",
+      "white chana",
+      "garbanzo beans"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "kachi ghani mustard oil": {
+    "product": "Kachi Ghani Mustard Oil",
+    "brand": "Dhara",
+    "size": "5 L",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "mustard oil",
+      "sarson oil",
+      "sarso tel",
+      "kachi ghani oil"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "kerala garlic mixture kettle cooked": {
+    "product": "Kerala Garlic Mixture",
+    "brand": "Let's Try",
+    "size": "173 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "garlic mixture",
+      "mixture",
+      "kerala mixture",
+      "namkeen"
+    ],
+    "category": "Snacks & Branded Foods"
+  },
+  "marie gold biscuit": {
+    "product": "Marie Gold Biscuits",
+    "brand": "Britannia",
+    "size": "117 g",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "marie biscuit",
+      "marie gold",
+      "biscuits",
+      "tea biscuits"
+    ],
+    "category": "Snacks & Branded Foods"
+  },
+  "masala ae magic mixed masala powder": {
+    "product": "Masala-Ae-Magic Mixed Masala Powder",
+    "brand": "Maggi",
+    "size": "72 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "masala powder",
+      "mixed masala",
+      "masala ae magic",
+      "seasoning powder"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "onion": {
+    "product": "Onion",
+    "brand": "fresho!",
+    "size": "1 kg",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "onion",
+      "pyaz",
+      "ullipaya",
+      "vengayam"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "organic maida": {
+    "product": "Maida",
+    "brand": "Organic Tattva",
+    "size": "500 g",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "maida",
+      "refined flour",
+      "all purpose flour",
+      "white flour"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "paneer": {
+    "product": "Paneer",
+    "brand": "Milky Mist",
+    "size": "200 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "paneer",
+      "cottage cheese",
+      "fresh paneer"
+    ],
+    "category": "Bakery, Cakes & Dairy"
+  },
+  "potato": {
+    "product": "Potato",
+    "brand": "fresho!",
+    "size": "1 kg",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "potato",
+      "aloo",
+      "alu"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "pure ghee tuppa": {
+    "product": "Pure Ghee",
+    "brand": "Nandini",
+    "size": "1 L",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "ghee",
+      "desi ghee",
+      "tuppa",
+      "clarified butter"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "pure milk cheese slice": {
+    "product": "Cheese Slices",
+    "brand": "Amul",
+    "size": "200 g",
+    "defaultQty": 2,
+    "alternatives": [],
+    "keywords": [
+      "cheese",
+      "cheese slice",
+      "cheese slices",
+      "processed cheese"
+    ],
+    "category": "Bakery, Cakes & Dairy"
+  },
+  "rusk real elaichi": {
+    "product": "Elaichi Rusk",
+    "brand": "Parle",
+    "size": "291.2 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "rusk",
+      "elaichi rusk",
+      "toast",
+      "tea rusk"
+    ],
+    "category": "Bakery, Cakes & Dairy"
+  },
+  "sabudana": {
+    "product": "Sabudana",
+    "brand": "Vijay Gold",
+    "size": "500 g",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "sabudana",
+      "sago",
+      "tapioca pearls"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "sugar pure hygienic fine grain natural sulphur free": {
+    "product": "Sugar",
+    "brand": "Madhur",
+    "size": "5 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "sugar",
+      "chini",
+      "cheeni",
+      "sakkare",
+      "white sugar"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "superior mp whole wheat atta": {
+    "product": "Whole Wheat Atta",
+    "brand": "Aashirvaad",
+    "size": "5 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "atta",
+      "wheat flour",
+      "whole wheat flour",
+      "gehun atta"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  },
+  "tomato hybrid": {
+    "product": "Hybrid Tomato",
+    "brand": "fresho!",
+    "size": "500 g",
+    "defaultQty": 2,
+    "alternatives": [
+      "fresho! Hybrid Tomato 1 kg"
+    ],
+    "keywords": [
+      "tomato",
+      "tamatar",
+      "thakkali",
+      "hybrid tomato"
+    ],
+    "category": "Fruits & Vegetables"
+  },
+  "toothbrush for kid": {
+    "product": "Kids Toothbrush",
+    "brand": "Colgate",
+    "size": "1 pc",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "toothbrush",
+      "kids toothbrush",
+      "children toothbrush",
+      "baby toothbrush"
+    ],
+    "category": "Beauty & Hygiene"
+  },
+  "unpolished kala black brown chana": {
+    "product": "Kala Chana",
+    "brand": "Tata Sampann",
+    "size": "1 kg",
+    "defaultQty": 1,
+    "alternatives": [],
+    "keywords": [
+      "kala chana",
+      "black chana",
+      "brown chana",
+      "kala gram",
+      "chickpeas"
+    ],
+    "category": "Foodgrains, Oil & Masala"
+  }
+}

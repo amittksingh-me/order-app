@@ -1,0 +1,12 @@
+{
+  "normalized": [
+    "potato"
+  ],
+  "matched": {
+    "potato": true
+  },
+  "finalList": "Home 2 kg",
+  "source": {
+    "potato": "user-memory"
+  }
+}

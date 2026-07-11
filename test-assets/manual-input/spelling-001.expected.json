@@ -1,0 +1,15 @@
+{
+  "normalized": [
+    "potatto",
+    "tomato",
+    "bread",
+    "onionn"
+  ],
+  "matched": {
+    "potatto": true,
+    "tomato": true,
+    "bread": true,
+    "onionn": true
+  },
+  "finalList": "fresho! Potato 1 kg\nfresho! Hybrid Tomato 500 g\nBritannia Breakfast Slice Bread 450 g\nfresho! Onion 1 kg"
+}
