@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import ProductTable from "./ProductTable.jsx";
+import SyncPanel from "./SyncPanel.jsx";
 
 const PAGE_SIZE = 8;
 const EMPTY = { product: "", brand: "", size: "", defaultQty: 1, category: "" };
@@ -13,6 +14,7 @@ export default function MemoryPanel({
   onDeleteLearned,
   onEdit,
   onAdd,
+  onSync,
 }) {
   const [view, setView] = useState("builtin"); // builtin | learned
   const [query, setQuery] = useState("");
@@ -267,6 +269,8 @@ export default function MemoryPanel({
           </button>
         </div>
       )}
+
+      <SyncPanel onSync={onSync} />
 
       <div className="settings-actions">
         <button className="btn-secondary" type="button" onClick={onExport}>

@@ -4,6 +4,7 @@ import products from "./data/products.json";
 import { enrichItems } from "./lib/enrich";
 import { formatShoppingList } from "./lib/format";
 import { normalizeItem } from "./lib/normalize";
+import { syncSheet } from "./lib/sheets";
 import {
   getAllMemory,
   putMemory,
@@ -11,6 +12,8 @@ import {
   deleteMemory,
   importMemory,
 } from "./lib/memory";
+
+const SHEET_URL_KEY = "sheet-csv-url";
 import InputPanel from "./components/InputPanel";
 import ReviewPanel from "./components/ReviewPanel";
 import MemoryPanel from "./components/MemoryPanel";
@@ -45,7 +48,17 @@ export default function App() {
   const [tab, setTab] = useState("main"); // main | settings
 
   useEffect(() => {
-    getAllMemory().then(setUserMemory).catch(() => setUserMemory({}));
+    getAllMemory()
+      .then((mem) => {
+        setUserMemory(mem);
+        try {
+          const url = localStorage.getItem(SHEET_URL_KEY);
+          if (url) {
+            syncSheet(url).then((res) => setUserMemory(res.memory)).catch(() => {});
+          }
+        } catch {}
+      })
+      .catch(() => setUserMemory({}));
   }, []);
 
   async function handleEnrich() {
@@ -165,6 +178,7 @@ export default function App() {
           onDeleteLearned={handleDeleteLearned}
           onEdit={handleEditMemory}
           onAdd={handleAddMemory}
+          onSync={setUserMemory}
         />
       )}
       <p className="foot-hint">

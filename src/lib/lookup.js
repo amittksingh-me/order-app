@@ -55,41 +55,33 @@ function fuzzyMatch(key, builtin) {
 export function lookupProduct(key, builtin, userMemory) {
   if (!key) return { matched: false, normalized: key };
 
-  // 2. User Memory (highest priority)
+  // 1. User Memory exact key match
   if (userMemory && userMemory[key]) {
-    return {
-      matched: true,
-      source: "user-memory",
-      product: userMemory[key],
-      normalized: key,
-    };
+    return { matched: true, source: "user-memory", product: userMemory[key], normalized: key };
+  }
+
+  // 2. User Memory keyword match
+  if (userMemory) {
+    for (const entry of Object.values(userMemory)) {
+      if (entry.keywords && entry.keywords.some((kw) => normalizeItem(kw) === key)) {
+        return { matched: true, source: "user-memory", product: entry, normalized: key };
+      }
+    }
   }
 
   // 3 & 4. Built-in exact + keyword index
   const index = buildKeywordIndex(builtin);
   if (index.has(key)) {
     const entryKey = index.get(key);
-    return {
-      matched: true,
-      source: "builtin",
-      product: builtin[entryKey],
-      normalized: key,
-    };
+    return { matched: true, source: "builtin", product: builtin[entryKey], normalized: key };
   }
 
-  // 5. Alias match is covered by the keyword index above.
-  // 6. Fuzzy match
+  // 5. Fuzzy match (built-in only)
   const fuzzy = fuzzyMatch(key, builtin);
   if (fuzzy) {
-    return {
-      matched: true,
-      source: "builtin",
-      product: fuzzy.entry,
-      normalized: key,
-      fuzzy: true,
-    };
+    return { matched: true, source: "builtin", product: fuzzy.entry, normalized: key, fuzzy: true };
   }
 
-  // 7. Unknown
+  // 6. Unknown
   return { matched: false, normalized: key };
 }
