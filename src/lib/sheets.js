@@ -8,7 +8,33 @@ export async function fetchCsv(url) {
 }
 
 export function parseCsv(text) {
-  const lines = text.trim().split("\n");
+  const all = text.trim();
+  if (!all) return [];
+
+  // Split into lines, handling quoted values that span multiple lines
+  const lines = [];
+  let cur = "";
+  let inQ = false;
+
+  for (let i = 0; i < all.length; i++) {
+    const ch = all[i];
+    if (ch === '"') {
+      if (inQ && i + 1 < all.length && all[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQ = !inQ;
+      }
+      cur += ch;
+    } else if (ch === "\n" && !inQ) {
+      lines.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur) lines.push(cur);
+
   if (lines.length < 2) return [];
 
   const headers = parseLine(lines[0]);
@@ -18,7 +44,7 @@ export function parseCsv(text) {
     if (!values.length) continue;
     const row = {};
     headers.forEach((h, idx) => {
-      row[h.trim().toLowerCase()] = (values[idx] || "").trim();
+      row[h.trim().toLowerCase()] = (values[idx] || "").replace(/^"|"$/g, "").trim();
     });
     if (!row.product) continue;
     row.defaultQty = parseInt(row.defaultQty || row.qty || "1", 10) || 1;
@@ -40,6 +66,7 @@ function parseLine(line) {
           i++;
         } else {
           inQ = false;
+          cur += '"';
         }
       } else {
         cur += ch;
@@ -47,6 +74,7 @@ function parseLine(line) {
     } else {
       if (ch === '"') {
         inQ = true;
+        cur += '"';
       } else if (ch === ",") {
         result.push(cur);
         cur = "";

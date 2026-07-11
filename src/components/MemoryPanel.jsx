@@ -3,7 +3,7 @@ import ProductTable from "./ProductTable.jsx";
 import SyncPanel from "./SyncPanel.jsx";
 
 const PAGE_SIZE = 8;
-const EMPTY = { product: "", brand: "", size: "", defaultQty: 1, category: "" };
+const EMPTY = { product: "", brand: "", size: "", defaultQty: 1, category: "", keywords: "" };
 
 export default function MemoryPanel({
   builtin,
@@ -78,6 +78,7 @@ export default function MemoryPanel({
       size: row.size || "",
       defaultQty: row.defaultQty ?? 1,
       category: row.category || "",
+      keywords: Array.isArray(row.keywords) ? row.keywords.join("; ") : (row.keywords || ""),
     });
   }
   function startAdd() {
@@ -94,6 +95,9 @@ export default function MemoryPanel({
       size: draft.size.trim(),
       defaultQty: Number(draft.defaultQty) || 1,
       category: draft.category.trim(),
+      keywords: draft.keywords
+        ? draft.keywords.split(";").map((k) => k.trim()).filter(Boolean)
+        : [],
       alternatives: [],
     };
     if (editing.isNew) {
@@ -152,6 +156,22 @@ export default function MemoryPanel({
               onChange={(e) => setField("category", e.target.value)}
               placeholder="e.g. Vegetables"
             />
+          </label>
+          <label className="editor-kw">
+            Keywords
+            <input
+              value={draft.keywords}
+              onChange={(e) => setField("keywords", e.target.value)}
+              placeholder="e.g. moisturizer; face cream"
+            />
+            {draft.keywords.trim() && (
+              <div className="kw-chips">
+                {draft.keywords.split(";").map((k, i) => {
+                  const t = k.trim();
+                  return t ? <span key={i} className="kw-chip">{t}</span> : null;
+                })}
+              </div>
+            )}
           </label>
         </div>
         <div className="editor-actions">
@@ -230,6 +250,7 @@ export default function MemoryPanel({
             qty: e.defaultQty ?? 1,
             category: e.category,
             defaultQty: e.defaultQty ?? 1,
+            keywords: e.keywords,
           }))}
           actions={(e) => (
             <>

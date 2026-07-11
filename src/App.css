@@ -517,8 +517,26 @@ button {
   border-color: var(--accent);
 }
 
-.editor-cat {
+.editor-cat,
+.editor-kw {
   grid-column: 1 / -1;
+}
+
+.kw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.kw-chip {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
+  line-height: 1.4;
 }
 
 .editor-actions {
