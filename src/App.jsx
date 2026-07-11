@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import products from "./data/products.json";
-import { enrichItems, reLookup } from "./lib/enrich";
+import { enrichItems } from "./lib/enrich";
 import { formatShoppingList } from "./lib/format";
 import { normalizeItem } from "./lib/normalize";
 import {
@@ -9,7 +9,6 @@ import {
   putMemory,
   clearMemory,
   deleteMemory,
-  exportMemory,
   importMemory,
 } from "./lib/memory";
 import InputPanel from "./components/InputPanel";
@@ -43,29 +42,22 @@ export default function App() {
   const [items, setItems] = useState([]);
   const [enriched, setEnriched] = useState(false);
   const [userMemory, setUserMemory] = useState({});
-  const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState("main"); // main | settings
 
   useEffect(() => {
     getAllMemory().then(setUserMemory).catch(() => setUserMemory({}));
   }, []);
 
-  function handleEnrich() {
+  async function handleEnrich() {
     const lines = rawInput.split("\n");
     const result = enrichItems(lines, products, userMemory);
     setItems(result);
     setEnriched(true);
-    setCopied(false);
-  }
-
-  async function handleCopy() {
-    const text = formatShoppingList(items);
+    const text = formatShoppingList(result);
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
-      setCopied(false);
+      // clipboard write failed silently
     }
   }
 
@@ -155,8 +147,6 @@ export default function App() {
           {enriched && (
             <ReviewPanel
               items={items}
-              onCopy={handleCopy}
-              copied={copied}
               onResetInput={() => {
                 setEnriched(false);
                 setItems([]);

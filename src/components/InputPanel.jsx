@@ -1,4 +1,4 @@
-export default function InputPanel({ value, onChange, onEnrich, disabled }) {
+export default function InputPanel({ value, onChange, onEnrich }) {
   return (
     <section className="panel input-panel">
       <textarea
@@ -9,11 +9,8 @@ export default function InputPanel({ value, onChange, onEnrich, disabled }) {
         rows={8}
       />
       <div className="input-actions">
-        <button className="btn-secondary" onClick={() => onChange("")} type="button">
-          Clear
-        </button>
         <button className="btn-primary" onClick={onEnrich} type="button">
-          Enrich List
+          Enrich &amp; Copy
         </button>
       </div>
     </section>

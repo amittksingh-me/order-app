@@ -1,6 +1,6 @@
 import ProductTable from "./ProductTable.jsx";
 
-export default function ReviewPanel({ items, onCopy, copied, onResetInput }) {
+export default function ReviewPanel({ items, onResetInput }) {
   const rows = items.map((it) => ({
     id: it.id,
     brand: it.brand,
@@ -24,9 +24,9 @@ export default function ReviewPanel({ items, onCopy, copied, onResetInput }) {
         <ProductTable rows={rows} />
       )}
 
-      <button className="btn-primary copy-btn" type="button" onClick={onCopy}>
-        {copied ? "Copied!" : "Copy Shopping List"}
-      </button>
+      <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "center", margin: "16px 0 0" }}>
+        Copied to clipboard — paste into BigBasket
+      </p>
     </section>
   );
 }
