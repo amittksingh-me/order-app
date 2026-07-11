@@ -1,0 +1,16 @@
+{
+  "normalized": ["dudh", "under", "paneer", "anda"],
+  "matched": {
+    "dudh": true,
+    "under": false,
+    "paneer": true,
+    "anda": true
+  },
+  "source": {
+    "dudh": "user-memory",
+    "under": "unknown",
+    "paneer": "builtin",
+    "anda": "user-memory"
+  },
+  "finalList": "under\nNandini Shubham Milk 500 ml\nMilky Mist Paneer 200 g\nFresho Farm Eggs 6 pcs"
+}

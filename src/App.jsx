@@ -120,7 +120,12 @@ export default function App() {
   }
 
   async function handleLaunch() {
-    await doEnrich();
+    if (!enriched) {
+      await doEnrich();
+    } else {
+      const text = formatShoppingList(items);
+      try { await navigator.clipboard.writeText(text); } catch {}
+    }
     window.location.href = "https://www.bigbasket.com";
   }
 
@@ -135,6 +140,13 @@ export default function App() {
     } catch {
       // clipboard write failed silently
     }
+  }
+
+  function handleDeleteItem(id) {
+    const updated = items.filter((it) => it.id !== id);
+    setItems(updated);
+    const text = formatShoppingList(updated);
+    try { navigator.clipboard.writeText(text); } catch {}
   }
 
   async function handleReset() {
@@ -238,6 +250,7 @@ export default function App() {
           {enriched && (
             <ReviewPanel
               items={items}
+              onDeleteItem={handleDeleteItem}
               onResetInput={() => {
                 setEnriched(false);
                 setItems([]);

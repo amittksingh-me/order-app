@@ -383,6 +383,34 @@ button {
   background: #fcd8d6;
 }
 
+.btn-icon-sm {
+  width: 24px;
+  height: 24px;
+}
+
+.status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.status-badge.status-ok {
+  background: #e4f3e4;
+  color: #1a6b1a;
+}
+
+.status-badge.status-fuzzy {
+  background: #fff0bf;
+  color: #8a5a00;
+}
+
+.status-badge.status-unknown {
+  background: #fde8e8;
+  color: #b33a3a;
+}
+
 .badge {
   grid-column: 1 / -1;
   justify-self: start;
@@ -669,6 +697,10 @@ button {
   gap: 6px;
   align-items: center;
   justify-content: flex-end;
+}
+
+.product-table .row-actions .status-badge {
+  margin-right: auto;
 }
 
 .product-table .pc-name {
