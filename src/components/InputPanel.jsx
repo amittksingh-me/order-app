@@ -12,6 +12,14 @@ export default function InputPanel({ value, onChange, onEnrich }) {
         <button className="btn-primary" onClick={onEnrich} type="button">
           Enrich &amp; Copy
         </button>
+        <a
+          className="btn-secondary"
+          href="https://www.bigbasket.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Launch BigBasket
+        </a>
       </div>
     </section>
   );
