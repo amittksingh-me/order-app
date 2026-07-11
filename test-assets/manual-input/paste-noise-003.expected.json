@@ -1,0 +1,19 @@
+{
+  "normalized": [
+    "milk",
+    "egg",
+    "tata salt",
+    "atta",
+    "onion",
+    "potato"
+  ],
+  "matched": {
+    "milk": false,
+    "egg": false,
+    "tata salt": false,
+    "atta": true,
+    "onion": true,
+    "potato": true
+  },
+  "finalList": "milk, egg, tata salt, Aashirvaad Whole Wheat Atta 5 kg, fresho Onion 1 kg, fresho Potato 1 kg"
+}

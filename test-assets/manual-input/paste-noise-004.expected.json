@@ -1,0 +1,37 @@
+{
+  "normalized": [
+    "amul pasteurised butter tub 200 g",
+    "ching's secret veg hakka noodles 140 g",
+    "nandini shubham milk 500 ml",
+    "clove",
+    "kabuli chana",
+    "whole",
+    "atta",
+    "black pepper whole",
+    "cumin jeera whole",
+    "macaroni pasta",
+    "slice bread",
+    "idly dosa batter",
+    "basmati rice",
+    "masala ae magic",
+    "paneer"
+  ],
+  "matched": {
+    "amul pasteurised butter tub 200 g": false,
+    "ching's secret veg hakka noodles 140 g": false,
+    "nandini shubham milk 500 ml": false,
+    "clove": false,
+    "kabuli chana": true,
+    "whole": true,
+    "atta": true,
+    "black pepper whole": true,
+    "cumin jeera whole": true,
+    "macaroni pasta": true,
+    "slice bread": true,
+    "idly dosa batter": true,
+    "basmati rice": true,
+    "masala ae magic": true,
+    "paneer": true
+  },
+  "finalList": "amul pasteurised butter tub 200 g, ching's secret veg hakka noodles 140 g, nandini shubham milk 500 ml, clove, 24 Mantra Organic Organic Kabuli Chana 500 g, 24 Mantra Organic Organic Kabuli Chana 500 g, Aashirvaad Whole Wheat Atta 5 kg, bb Popular Black Pepper Whole 50 g, BB Royal Cumin Jeera Whole 200 g, Borges Durum Wheat Macaroni Pasta 350 g, Britannia Breakfast Slice Bread 450 g, iD Idly Dosa Batter 1 kg, India Gate Gold Standard Classic Basmati Rice 5 kg, Maggi Masala Ae Magic Mixed Masala Powder 72 g, Milky Mist Paneer 200 g"
+}

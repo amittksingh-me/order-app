@@ -1,0 +1,111 @@
+{
+  "nandini shubham milk 500 ml": {
+    "product": "Shubham Milk",
+    "brand": "Nandini",
+    "size": "500 ml",
+    "keywords": [
+      "milk",
+      "doodh",
+      "dudh"
+    ]
+  },
+  "fresho farm eggs 6 pcs": {
+    "product": "Farm Eggs",
+    "brand": "Fresho",
+    "size": "6 pcs",
+    "keywords": [
+      "anda",
+      "andaa",
+      "eggs"
+    ]
+  },
+  "everest turmeric powder 200 g": {
+    "product": "Turmeric Powder",
+    "brand": "Everest",
+    "size": "200 g",
+    "keywords": [
+      "haldi",
+      "turmeric",
+      "turmeric powder"
+    ]
+  },
+  "everest coriander powder 200 g": {
+    "product": "Coriander Powder",
+    "brand": "Everest",
+    "size": "200 g",
+    "keywords": [
+      "dhaniya",
+      "coriander",
+      "coriander powder"
+    ]
+  },
+  "maggi masala ae magic mixed masala powder 72 g": {
+    "product": "Masala Ae Magic Mixed Masala Powder",
+    "brand": "Maggi",
+    "size": "72 g",
+    "keywords": [
+      "masala",
+      "maggi masala",
+      "masala powder",
+      "mixed masala"
+    ]
+  },
+  "bb popular black pepper whole 50 g": {
+    "product": "Black Pepper Whole",
+    "brand": "bb Popular",
+    "size": "50 g",
+    "keywords": [
+      "kali mirch",
+      "black pepper"
+    ]
+  },
+  "bb royal cumin jeera whole 200 g": {
+    "product": "Cumin Jeera Whole",
+    "brand": "BB Royal",
+    "size": "200 g",
+    "keywords": [
+      "jeera",
+      "cumin",
+      "sabut jeera"
+    ]
+  },
+  "id idly dosa batter 1 kg": {
+    "product": "Idly Dosa Batter",
+    "brand": "iD",
+    "size": "1 kg",
+    "keywords": [
+      "dosa batter",
+      "idli batter",
+      "idly batter"
+    ]
+  },
+  "amul pasteurised butter tub 200 g": {
+    "product": "Pasteurised Butter Tub",
+    "brand": "Amul",
+    "size": "200 g",
+    "keywords": [
+      "butter",
+      "amul butter",
+      "pasteurised butter"
+    ]
+  },
+  "weikfield cornflour 200 g": {
+    "product": "Cornflour",
+    "brand": "Weikfield",
+    "size": "200 g",
+    "keywords": [
+      "cornflour",
+      "corn flour"
+    ]
+  },
+  "tata sampann toor daal 1 kg": {
+    "product": "Toor Daal",
+    "brand": "Tata Sampann",
+    "size": "1 kg",
+    "keywords": [
+      "daal",
+      "toor daal",
+      "arhar daal"
+    ]
+  }
+}

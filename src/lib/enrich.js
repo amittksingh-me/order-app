@@ -16,22 +16,39 @@ function nextId() {
 // Flatten input lines: lines that don't match are fed through parseTranscript
 // to split into sub-phrases. This ensures dedup happens AFTER splitting.
 function expandLines(lines, builtin, userMemory) {
+  const brands = collectBrands(builtin, userMemory);
+  const sizeWords = collectSizeWords(builtin, userMemory);
   const out = [];
   for (const line of lines) {
     const key = normalizeItem(line);
     if (!key) continue;
     if (lookupProduct(key, builtin, userMemory).matched) {
       out.push(line);
+    } else if (isNoise(key, brands, sizeWords)) {
+      continue;
     } else {
       const splits = parseTranscript(line, builtin, userMemory);
       if (splits.length > 1) {
-        const anyMatch = splits.some((s) =>
-          lookupProduct(normalizeItem(s), builtin, userMemory).matched
-        );
-        if (anyMatch) {
-          out.push(...splits);
-        } else {
-          out.push(line);
+        const clean = splits.filter((s) => {
+          const k = normalizeItem(s);
+          return k && !isNoise(k, brands, sizeWords);
+        });
+        if (clean.length > 0) {
+          const compressed = clean.length > 1
+            ? compressToMatch(clean, builtin, userMemory)
+            : null;
+          if (compressed) {
+            out.push(compressed);
+          } else {
+            const anyMatch = clean.some((s) =>
+              lookupProduct(normalizeItem(s), builtin, userMemory).matched
+            );
+            if (anyMatch) {
+              out.push(...clean);
+            } else {
+              out.push(line);
+            }
+          }
         }
       } else {
         out.push(line);
@@ -39,6 +56,65 @@ function expandLines(lines, builtin, userMemory) {
     }
   }
   return out;
+}
+
+function collectBrands(builtin, userMemory) {
+  const brands = new Set();
+  for (const v of Object.values(builtin)) {
+    if (v.brand) {
+      const n = normalizeItem(v.brand);
+      if (n) { brands.add(n); n.split(/\s+/).forEach((w) => brands.add(w)); }
+    }
+  }
+  for (const v of Object.values(userMemory)) {
+    if (v.brand) {
+      const n = normalizeItem(v.brand);
+      if (n) { brands.add(n); n.split(/\s+/).forEach((w) => brands.add(w)); }
+    }
+  }
+  return brands;
+}
+
+function collectSizeWords(builtin, userMemory) {
+  const sizes = new Set();
+  const collect = (v) => {
+    if (v.size) {
+      const n = normalizeItem(v.size);
+      if (n) {
+        n.split(/\s+/).forEach((p) => {
+          if (p && !/^\d+(\.\d+)?$/.test(p)) sizes.add(p);
+        });
+      }
+    }
+  };
+  Object.values(builtin).forEach(collect);
+  Object.values(userMemory).forEach(collect);
+  return sizes;
+}
+
+function isNoise(key, brands, sizeWords) {
+  if (/^\d+(\.\d+)?$/.test(key)) return true;
+  if (sizeWords.has(key)) return true;
+  if (key.endsWith("s") && key.length > 2) {
+    const singular = key.slice(0, -1);
+    if (sizeWords.has(singular)) return true;
+  }
+  if (brands.has(key)) return true;
+  return false;
+}
+
+function compressToMatch(clean, builtin, userMemory) {
+  const normalized = clean.map((w) => ({ raw: w, key: normalizeItem(w) }));
+  for (const { raw, key } of normalized) {
+    const look = lookupProduct(key, builtin, userMemory);
+    if (look.matched) {
+      const prodName = normalizeItem(look.product.product || "");
+      if (!prodName) continue;
+      const others = normalized.filter((n) => n.raw !== raw);
+      if (others.every((n) => prodName.includes(n.key))) return raw;
+    }
+  }
+  return null;
 }
 
 // lines: string[] (raw input, one per line)

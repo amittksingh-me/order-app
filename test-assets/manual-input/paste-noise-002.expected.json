@@ -1,0 +1,17 @@
+{
+  "normalized": [
+    "atta",
+    "black pepper whole",
+    "slice bread",
+    "idly dosa batter",
+    "paneer"
+  ],
+  "matched": {
+    "atta": true,
+    "black pepper whole": true,
+    "slice bread": true,
+    "idly dosa batter": true,
+    "paneer": true
+  },
+  "finalList": "Aashirvaad Whole Wheat Atta 5 kg, bb Popular Black Pepper Whole 50 g, Britannia Breakfast Slice Bread 450 g, iD Idly Dosa Batter 1 kg, Milky Mist Paneer 200 g"
+}
