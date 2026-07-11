@@ -46,7 +46,7 @@
   },
   "carrot orange": {
     "product": "Orange Carrot",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "500 g",
     "defaultQty": 1,
     "alternatives": [],
@@ -60,7 +60,7 @@
   },
   "chilli green long medium": {
     "product": "Green Chilli Long Medium",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "100 g",
     "defaultQty": 1,
     "alternatives": [],
@@ -75,7 +75,7 @@
   },
   "coriander leaves without root": {
     "product": "Coriander Leaves Without Root",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "250 g",
     "defaultQty": 1,
     "alternatives": [],
@@ -89,7 +89,7 @@
   },
   "cucumber": {
     "product": "Cucumber",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "1 kg",
     "defaultQty": 1,
     "alternatives": [],
@@ -174,7 +174,7 @@
   },
   "garlic": {
     "product": "Garlic",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "250 g",
     "defaultQty": 1,
     "alternatives": [],
@@ -187,7 +187,7 @@
   },
   "ginger": {
     "product": "Ginger",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "250 g",
     "defaultQty": 1,
     "alternatives": [],
@@ -244,7 +244,7 @@
   },
   "green chilli small": {
     "product": "Green Chilli Small",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "250 g",
     "defaultQty": 1,
     "alternatives": [],
@@ -258,7 +258,7 @@
   },
   "green pea": {
     "product": "Green Peas",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "250 g",
     "defaultQty": 2,
     "alternatives": [],
@@ -356,7 +356,7 @@
     "category": "Snacks & Branded Foods"
   },
   "masala ae magic mixed masala powder": {
-    "product": "Masala-Ae-Magic Mixed Masala Powder",
+    "product": "Masala Ae Magic Mixed Masala Powder",
     "brand": "Maggi",
     "size": "72 g",
     "defaultQty": 1,
@@ -371,7 +371,7 @@
   },
   "onion": {
     "product": "Onion",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "1 kg",
     "defaultQty": 2,
     "alternatives": [],
@@ -412,7 +412,7 @@
   },
   "potato": {
     "product": "Potato",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "1 kg",
     "defaultQty": 2,
     "alternatives": [],
@@ -509,7 +509,7 @@
   },
   "tomato hybrid": {
     "product": "Hybrid Tomato",
-    "brand": "fresho!",
+    "brand": "fresho",
     "size": "500 g",
     "defaultQty": 2,
     "alternatives": [
