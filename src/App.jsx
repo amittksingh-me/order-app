@@ -129,11 +129,17 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
-  // Save draft immediately on every change (IndexedDB async but immediate).
-  // Also sync to localStorage on beforeunload as a synchronous safety net.
+  // Save draft immediately on every change.
+  // Async IndexedDB (survives normal tab close) + sync localStorage (survives
+  // app kill on mobile where beforeunload doesn't fire).
   useEffect(() => {
-    if (rawInput) saveDraft(rawInput);
-    else deleteDraft();
+    if (rawInput) {
+      saveDraft(rawInput);
+      try { localStorage.setItem("draft-input", rawInput); } catch {}
+    } else {
+      deleteDraft();
+      try { localStorage.removeItem("draft-input"); } catch {}
+    }
   }, [rawInput]);
 
   useEffect(() => {
