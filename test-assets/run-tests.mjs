@@ -564,5 +564,27 @@ for (const tc of speechCases) {
   else { fail += 1; console.log(`✗ speech-android-cumulative-finals: display="${d}" acc=${JSON.stringify(acc)}`); }
 }
 
+// Android: cumulative finals with casing change (Nariyal tel → Nariyal Tel)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: true, transcript: "" }], 0, acc, cache);
+  if (d !== "") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "Nariyal" }], 1, acc, cache);
+  if (d !== "Nariyal") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "Nariyal tel" }], 2, acc, cache);
+  if (d !== "Nariyal tel") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "Nariyal Tel" }], 3, acc, cache);
+  if (d !== "Nariyal Tel") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-cumulative-finals-casing`); }
+  else { fail += 1; console.log(`✗ speech-android-cumulative-finals-casing: display="${d}" acc=${JSON.stringify(acc)}`); }
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

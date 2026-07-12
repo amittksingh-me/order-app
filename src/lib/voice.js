@@ -73,14 +73,14 @@ export function processSpeechResults(newResults, resultIndex, finalsAccum, inter
     const r = newResults[i];
     if (r.isFinal) {
       const lastFinal = finalsAccum.at(-1);
-      if (lastFinal !== undefined && r.transcript.startsWith(lastFinal)) {
+      if (lastFinal !== undefined && r.transcript.toLowerCase().startsWith(lastFinal.toLowerCase())) {
         finalsAccum[finalsAccum.length - 1] = r.transcript;
       } else if (r.transcript !== lastFinal) {
         finalsAccum.push(r.transcript);
       }
       delete interimCache[idx];
     } else {
-      const text = r.transcript.trim();
+      const text = r.transcript.trim().toLowerCase();
       let storeIdx = idx;
       if (idx === 0 && interimCache[0] !== undefined) {
         const existing = interimCache[0];
