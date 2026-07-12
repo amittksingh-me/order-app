@@ -2,7 +2,7 @@
 
 > **App:** BaskIt (shopping-list-pwa)  
 > **Stack:** React 19 + Vite 8 + vanilla CSS  
-> **Storage:** IndexedDB (user memory) + localStorage (settings)  
+> **Storage:** IndexedDB (user memory + drafts) + localStorage (settings + draft backup)  
 > **Build:** Vite, PWA via `vite-plugin-pwa`  
 > **CI/CD:** GitHub Pages deploy on push to `main`
 
@@ -73,10 +73,12 @@ order-app/
 │   │   ├── duplicate.js           # Duplicate detection
 │   │   ├── lookup.js              # Multi-strategy product lookup
 │   │   ├── enrich.js              # Core enrichment engine
-│   │   ├── voice.js               # Voice transcript parser
+│   │   ├── voice.js               # Voice transcript parser (parseTranscript)
+│   │   ├── speech.js              # Live speech preview engine (processSpeechResults)
 │   │   ├── format.js              # Clipboard formatting
-│   │   ├── product.js             # Display name builder
-│   │   ├── memory.js              # IndexedDB CRUD
+│   │   ├── product.js             # Display name builder + mergeDatabase
+│   │   ├── memory.js              # IndexedDB product CRUD
+│   │   ├── draft.js               # IndexedDB draft persistence
 │   │   └── sheets.js              # Google Sheets sync
 │   │
 │   └── components/
@@ -87,7 +89,18 @@ order-app/
 │       └── SyncPanel.jsx          # Google Sheets sync UI
 │
 ├── test-assets/
-│   ├── run-tests.mjs              # Test runner (node)
+│   ├── run-tests.mjs              # Test runner (node) — imports all test-*.mjs
+│   ├── test-normalize.mjs
+│   ├── test-duplicate.mjs
+│   ├── test-lookup.mjs
+│   ├── test-enrich.mjs
+│   ├── test-voice.mjs
+│   ├── test-speech.mjs
+│   ├── test-format.mjs
+│   ├── test-product.mjs
+│   ├── test-memory.mjs
+│   ├── test-draft.mjs
+│   ├── test-sheets.mjs
 │   └── manual-input/              # File-based test cases
 │       ├── basic-001.*
 │       ├── duplicate-001.*
@@ -96,6 +109,9 @@ order-app/
 │       ├── memory-001.*
 │       ├── voice-001.* – voice-005.*
 │       ├── unknown-first-001.*
+│       ├── paste-cycle-001.* – paste-cycle-002.*
+│       ├── paste-noise-001.* – paste-noise-004.*
+│       ├── dedup-sugar-chini.*
 │
 └── scripts/
     ├── build-db.mjs               # Build products.json from order exports
@@ -222,7 +238,11 @@ User types/pastes voice text
 | Function | Purpose |
 |---|---|
 | `parseTranscript(transcript, builtin, userMemory)` | Greedy left-to-right phrase matcher. Strips filler words (`"and"`, `"the"`, `"a"`, `"an"`, `"or"`, `"for"`, `"of"`, `"to"`, `"in"`, `"my"`, etc.) and single‑char tokens. Tries longest DB‑matching phrase first (up to 4 words), falls back to single words. Used by `expandLines()` in the enrichment pipeline — NOT by the Web Speech API handler directly |
-| `processSpeechResults(newResults, resultIndex, finalsAccum, interimCache)` | Core live-preview engine. Stores non-finals in a cross-event `interimCache` (keyed by result index) with platform-specific logic: (1) iOS single-word-at-index-0 → auto-increment storeIdx to avoid overwrite. (2) Android alternatives → handled by word-overlap detection in the distinct loop (≥50% shared tokens → replace). (3) Finals use case-insensitive `startsWith` comparison to handle Android's cumulative transcript pattern. Interims are lowered for consistent dedup; finals preserve original casing |
+
+### `lib/speech.js`
+| Function | Purpose |
+|---|---|
+| `processSpeechResults(newResults, resultIndex, finalsAccum, interimCache)` | Core live-preview engine for the Web Speech API `onresult` handler. Stores non-finals in a cross-event `interimCache` (keyed by result index) with platform-specific logic: (1) iOS single-word-at-index-0 → auto-increment storeIdx to avoid overwrite. (2) Android alternatives → handled by word-overlap detection in the distinct loop (≥50% shared tokens → replace). (3) Finals use case-insensitive `startsWith` comparison to handle Android's cumulative transcript pattern. Interims are lowered for consistent dedup; finals preserve original casing. Exported from `lib/speech.js` (split from `voice.js` so the live-preview engine can be imported without the transcript parser) |
 
 ### `lib/format.js`
 | Function | Purpose |
@@ -233,6 +253,7 @@ User types/pastes voice text
 | Function | Purpose |
 |---|---|
 | `buildDisplayName(brand, product, size)` | Returns `"Brand Product Size"` (e.g. `"fresho Potato 1 kg"`) |
+| `mergeDatabase(builtin, userMemory)` | Merges built-in products.json with user memory overrides. Returns a single `{ [key]: product }` object. Used by MemoryPanel's export feature. Moved here from `App.jsx` to keep the component focused on orchestration |
 
 ### `lib/memory.js`
 | Function | Purpose |
@@ -244,6 +265,15 @@ User types/pastes voice text
 | `clearMemory()` | Wipe entire store |
 | `importMemory(map)` | Bulk insert |
 | `exportMemory()` | Alias for `getAllMemory` |
+| IndexedDB | `shopping-list-engine` (v2) — `userProducts` store (product CRUD) + `appState` store (created by `onupgradeneeded` for draft persistence) |
+
+### `lib/draft.js`
+| Function | Purpose |
+|---|---|
+| `getDraft()` | Returns saved draft from `appState` store (`id: "draft-input"`) or `null` |
+| `saveDraft(value)` | Upserts `{ id: "draft-input", value }` into `appState` store |
+| `deleteDraft()` | Removes `"draft-input"` entry from `appState` store |
+| IndexedDB | Opens `shopping-list-engine` without a version number (relies on `memory.js` to create stores via `onupgradeneeded`). All three functions are async and operate on the `appState` object store |
 
 ### `lib/sheets.js`
 | Function | Purpose |
@@ -258,18 +288,25 @@ User types/pastes voice text
 
 ### IndexedDB
 ```
-Database: shopping-list-engine (v1)
+Database: shopping-list-engine (v2)
   Object store: userProducts
     Key path: "key"
     Record: { key: string, product: object }
+
+  Object store: appState (added in v2)
+    Key path: "id"
+    Record: { id: string, value: string }
+    Used for: draft persistence ("draft-input")
 ```
 
 `getAllMemory()` returns a flat `{ [normalizedKey]: productObject }` map consumed by the app.
+`draft.js` opens the DB without a version (relies on `memory.js` `onupgradeneeded` to create stores).
 
 ### localStorage
 | Key | Value |
 |---|---|
 | `sheet-csv-url` | Google Sheets CSV URL (published, `output=csv`) |
+| `draft-input` | Synchronous draft backup — written on every keystroke alongside IndexedDB. Read first on mount to survive app-kill on mobile where `beforeunload` doesn't fire |
 
 ---
 
@@ -287,8 +324,8 @@ Instead of building a CRUD UI for every product field, the app syncs a published
 ### 7.4 Auto-copy on enrich
 The enriched list is automatically copied to the clipboard, removing the manual copy step. The "Launch BigBasket" button enriches, copies, then navigates (using `_self` to trigger Android App Links).
 
-### 7.5 Single IndexedDB store
-Only `userProducts` is used. There is no separate `userPreferences` store. All user data (product overrides, keywords, categories) lives in the same store.
+### 7.5 Two IndexedDB stores
+The database `shopping-list-engine` (v2) has two object stores: `userProducts` (product CRUD — keys, keywords, brand, size, category) and `appState` (app-level key-value pairs like `"draft-input"`). The draft functions live in their own module (`lib/draft.js`) to keep `lib/memory.js` focused on product storage. `draft.js` opens the DB without a version number and relies on `memory.js`'s `onupgradeneeded` to create both stores — this avoids a race where `draft.js` opens first and `onupgradeneeded` fires without creating the `appState` store.
 
 ### 7.6 File-based regression tests
 Tests are `.txt` input files with corresponding `.expected.json` files, run by `test-assets/run-tests.mjs`. This keeps tests readable and easy to add without a test framework dependency.
@@ -325,6 +362,13 @@ The initial Android batch heuristic deleted all but the last non‑final in a si
 
 ### 7.17 Lowercased interims, preserved finals
 Interim transcripts are stored `.trim().toLowerCase()` to ensure consistent prefix‑matching and overlap detection across platforms. Final transcripts preserve original casing — the `startsWith` comparison uses `.toLowerCase()` on both sides for case‑insensitive dedup, then stores the original‑cased transcript.
+
+### 7.18 Dual‑layer draft persistence (IndexedDB + localStorage)
+Draft input is saved on every keystroke to both IndexedDB (`appState` store via `lib/draft.js`) and `localStorage` (synchronous `.setItem()`). This dual approach exists because mobile browsers (iOS Safari, Chrome) do not reliably fire `beforeunload` when the app is killed — IndexedDB writes may be lost if the flush hasn't completed. `localStorage` writes are synchronous and survive app-kill. On mount:
+1. `localStorage` is read first (synchronous, before first render completes).
+2. IndexedDB is queried as a secondary fallback (for users with data only in IndexedDB before the sync writes were added).
+3. A `firstRender` ref guards the save effect — the effect returns early on mount without saving, preventing the effect from clearing the draft (via `rawInput=""`) before the restore runs.
+The mechanism is input-mode-agnostic: text, voice, and clipboard all converge through `setRawInput()` → the save effect.
 
 ---
 

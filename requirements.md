@@ -59,10 +59,11 @@
 | R3.2 | Supports typing and paste | ✅ | Standard `<textarea>` |
 | R3.3 | One item per line | ✅ | Split on `\n` at enrichment time |
 | R3.4 | Ignores empty lines | ✅ | `detectDuplicates()` skips empty/normalized-to-empty lines |
-| R3.5 | Voice-to-text via Web Speech API | ✅ | `interimResults: true`, `continuous: true`, `en-IN` locale. Tap mic once, auto‑stops after 2s silence. Live preview via `processSpeechResults()` with a cross-event `interimCache` (React ref). Three platform models handled: iOS (single words at index 0) → stored at next free index; iOS/Safari (accumulated transcript) → prefix-deduped against prior entry, replaces cache[0]; Android (cumulative finals) → case-insensitive `startsWith` replacement in finals accumulator; Android (alternatives) → word-overlap detection (≥50% shared tokens) in distinct loop replaces instead of appends. Interims stored `.trim().toLowerCase()` for case-consistent comparisons; finals preserve original casing |
+| R3.5 | Voice-to-text via Web Speech API | ✅ | `interimResults: true`, `continuous: true`, `en-IN` locale. Tap mic once, auto‑stops after 2s silence. Live preview via `processSpeechResults()` (`lib/speech.js`) with a cross-event `interimCache` (React ref). Three platform models handled: iOS (single words at index 0) → stored at next free index; iOS/Safari (accumulated transcript) → prefix-deduped against prior entry, replaces cache[0]; Android (cumulative finals) → case-insensitive `startsWith` replacement in finals accumulator; Android (alternatives) → word-overlap detection (≥50% shared tokens) in distinct loop replaces instead of appends. Interims stored `.trim().toLowerCase()` for case-consistent comparisons; finals preserve original casing |
 | R3.6 | "Prep List" button | ✅ | Enrich + auto-copy to clipboard |
-| R3.8 | Live interim preview without duplication | ✅ | Built from cross-event `interimCache` with prefix dedup, word-overlap alternative detection (≥50% tokens shared → replace), and suffix trimmed against finals |
+| R3.8 | Live interim preview without duplication | ✅ | Built from cross-event `interimCache` (React ref in `InputPanel.jsx`) by `processSpeechResults()` (`lib/speech.js`) with prefix dedup, word-overlap alternative detection (≥50% tokens shared → replace), and suffix trimmed against finals |
 | R3.7 | "Launch BigBasket" button | ✅ | Enrich + copy + navigate to bigbasket.com |
+| R3.9 | Draft persistence survives app-kill on mobile | ✅ | On every keystroke saves to both IndexedDB (`appState` store via `lib/draft.js`) and `localStorage` (sync fallback for app-kill where `beforeunload` doesn't fire). On mount restores from `localStorage` first (synchronous, before first render completes), then IndexedDB as fallback. `firstRender` ref prevents save effect from clearing the draft during mount. Input-mode-agnostic — text, voice, and clipboard all converge through `setRawInput()` → save effect |
 
 ---
 
@@ -115,9 +116,9 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — 12 file-based input + 5 `parseTranscript` + 2 paste‑cycle regression + 3 paste‑noise + 24 speech = 47 tests total |
-| R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑noise (attribute words) | ✅ | |
-| R7.3 | Every bug fix adds a regression test | ✅ | Pattern established — 47 tests covering all platforms |
+| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — orchestrator importing 11 per-module test files. 132 tests total: 14 normalize, 4 duplicate, 9 lookup, 18 enrich (12 file-based + 6 inline), 5 voice, 24 speech, 5 format, 5 product, 7 memory (exports), 6 draft (exports), 8 sheets (exports + parseCsv) |
+| R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑noise (attribute words), speech (iOS/Android/Safari), reLookup, mergeDatabase, format, module exports | ✅ | |
+| R7.3 | Every bug fix adds a regression test | ✅ | Pattern established — 132 tests across 11 per-module files, covering all platforms |
 
 ---
 
