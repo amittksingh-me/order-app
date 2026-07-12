@@ -1,5 +1,4 @@
 const DB_NAME = "shopping-list-engine";
-const DB_VERSION = 2;
 const APP_STORE = "appState";
 
 function openDB() {
@@ -8,13 +7,7 @@ function openDB() {
       reject(new Error("IndexedDB not available"));
       return;
     }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(APP_STORE)) {
-        db.createObjectStore(APP_STORE, { keyPath: "id" });
-      }
-    };
+    const req = indexedDB.open(DB_NAME);
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });

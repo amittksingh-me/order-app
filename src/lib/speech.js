@@ -1,3 +1,18 @@
+/**
+ * Process new speech recognition results and compute the live display string.
+ * Uses a cross-event interimCache keyed by result index:
+ *   - Trims space-prefixed transcripts iOS may send
+ *   - Detects when iOS delivers a single new word at index 0 that doesn't
+ *     continue from the existing entry, and stores it at the next free index
+ *   - Word-overlap detection in the distinct loop handles Android alternative
+ *     hypotheses (high word overlap → replace, low → append)
+ *
+ * @param {Array<{isFinal:boolean, transcript:string}>} newResults - Results from event.resultIndex onward
+ * @param {number} resultIndex - The event.resultIndex value
+ * @param {string[]} finalsAccum - Mutable accumulator of finalized transcripts (mutated in-place)
+ * @param {Object} interimCache - Mutable cache keyed by result index (mutated in-place)
+ * @returns {string} The full display string (finals + live suffix)
+ */
 export function processSpeechResults(newResults, resultIndex, finalsAccum, interimCache) {
   let iosSequence = false;
   for (let i = 0; i < newResults.length; i++) {

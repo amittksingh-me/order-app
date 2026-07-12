@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { enrichItems } from "../src/lib/enrich.js";
+import { enrichItems, reLookup } from "../src/lib/enrich.js";
 import { formatShoppingList } from "../src/lib/format.js";
 import products from "../src/data/products.json" with { type: "json" };
 
@@ -10,6 +10,7 @@ const dir = join(__dirname, "manual-input");
 
 export function run() {
   let pass = 0, fail = 0;
+  const ok = (cond, name) => { if (cond) { pass++; console.log(`✓ ${name}`); } else { fail++; console.log(`✗ ${name}`); } };
   const txtFiles = readdirSync(dir).filter((f) => f.endsWith(".txt"));
 
   for (const txt of txtFiles) {
@@ -45,6 +46,21 @@ export function run() {
     if (errors.length === 0) { pass++; console.log(`✓ ${base}`); }
     else { fail++; console.log(`✗ ${base}`); errors.forEach((e) => console.log(`   ${e}`)); }
   }
+
+  // reLookup edge cases (use "bread" — keyword for "Breakfast Slice Bread")
+  const unit = { input: "bread", normalized: "bread", matched: true, source: "builtin", fuzzy: false };
+
+  let r = reLookup(unit, products, {});
+  ok(r.matched, "reLookup keeps match");
+  ok(r.product === "Breakfast Slice Bread", "reLookup fills product");
+
+  r = reLookup({ ...unit, input: "xyzzy" }, products, {});
+  ok(r && r.matched === false, "reLookup unknown item");
+
+  // reLookup with preferredProduct uses that as lookup key
+  r = reLookup({ ...unit, preferredProduct: "Bread Slice", input: "xyzzy" }, products, {});
+  ok(r.matched, "reLookup matches via preferredProduct");
+  ok(r.product === "Breakfast Slice Bread", "reLookup uses preferredProduct");
 
   return { pass, fail };
 }

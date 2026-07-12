@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import products from "./data/products.json";
 import { enrichItems } from "./lib/enrich";
@@ -23,6 +23,7 @@ const DEFAULT_SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeqQBp7FYdB6BzQ20Y3Q-rFDuQemV50OpQIetw7LDI0hVBM4NEGYwyLm58s77UEWyp89ygXRixzVTI/pub?gid=0&single=true&output=csv";
 
 export default function App() {
+  const firstRender = useRef(true);
   const [rawInput, setRawInput] = useState("");
   const [items, setItems] = useState([]);
   const [enriched, setEnriched] = useState(false);
@@ -60,18 +61,19 @@ export default function App() {
   }
 
   useEffect(() => {
+    // Restore draft immediately from localStorage (saved synchronously on
+    // every keystroke — survives app kill on mobile).
+    try {
+      const draft = localStorage.getItem("draft-input");
+      if (draft) setRawInput(draft);
+    } catch {}
+
     getAllMemory()
       .then((mem) => {
         setUserMemory(mem);
-        // Prefer localStorage (synchronous beforeunload backup) over
-        // IndexedDB (debounce window could miss last keystroke).
-        let draft = null;
-        try { draft = localStorage.getItem("draft-input"); } catch {}
-        if (draft) {
-          setRawInput(draft);
-        } else {
-          return getDraft().then((d) => { if (d) setRawInput(d); });
-        }
+        // Fallback for users with data only in IndexedDB (before sync
+        // localStorage writes were added).
+        return getDraft().then((d) => { if (d) setRawInput(d); });
       })
       .catch(() => setUserMemory({}));
 
@@ -110,6 +112,10 @@ export default function App() {
   // Async IndexedDB (survives normal tab close) + sync localStorage (survives
   // app kill on mobile where beforeunload doesn't fire).
   useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
     if (rawInput) {
       saveDraft(rawInput);
       try { localStorage.setItem("draft-input", rawInput); } catch {}

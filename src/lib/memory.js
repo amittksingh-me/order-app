@@ -14,6 +14,9 @@ function openDB() {
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: "key" });
       }
+      if (!db.objectStoreNames.contains("appState")) {
+        db.createObjectStore("appState", { keyPath: "id" });
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
