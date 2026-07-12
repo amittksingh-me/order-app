@@ -34,15 +34,16 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
 
     recog.onresult = (event) => {
       let currentFinal = "";
-      let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
           currentFinal += (currentFinal ? " " : "") + result[0].transcript;
-        } else {
-          interim += (interim ? " " : "") + result[0].transcript;
         }
       }
+      // Only the last result matters for interim (each result is cumulative)
+      const last = event.results[event.results.length - 1];
+      const interim = last.isFinal ? "" : last[0].transcript;
+
       if (currentFinal) {
         transcriptAccumRef.current.push(currentFinal);
       }
