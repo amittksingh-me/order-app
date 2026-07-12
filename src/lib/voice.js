@@ -65,6 +65,11 @@ export function parseTranscript(transcript, builtin, userMemory) {
  * @returns {string} The full display string (finals + live suffix)
  */
 export function processSpeechResults(newResults, resultIndex, finalsAccum, interimCache) {
+  if (resultIndex > 0 && newResults.some(r => !r.isFinal)) {
+    interimCache._inc = true;
+  }
+
+  const nonFinalBunch = [];
   for (let i = 0; i < newResults.length; i++) {
     const idx = resultIndex + i;
     const r = newResults[i];
@@ -74,17 +79,25 @@ export function processSpeechResults(newResults, resultIndex, finalsAccum, inter
       }
       delete interimCache[idx];
     } else {
+      nonFinalBunch.push(idx);
       interimCache[idx] = r.transcript;
+    }
+  }
+
+  const isAndroidBatch = resultIndex === 0 && !interimCache._inc && nonFinalBunch.length >= 2;
+  if (isAndroidBatch) {
+    for (let i = 0; i < nonFinalBunch.length - 1; i++) {
+      delete interimCache[nonFinalBunch[i]];
     }
   }
 
   if (resultIndex === 0) {
     for (const k of Object.keys(interimCache)) {
-      if (+k >= resultIndex + newResults.length) delete interimCache[k];
+      if (+k >= resultIndex + newResults.length && k !== "_inc") delete interimCache[k];
     }
   }
 
-  const indices = Object.keys(interimCache).sort((a, b) => +a - +b);
+  const indices = Object.keys(interimCache).filter(k => k !== "_inc").sort((a, b) => +a - +b);
   const distinct = [];
   for (const idx of indices) {
     const t = interimCache[idx];

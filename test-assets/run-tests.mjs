@@ -275,8 +275,7 @@ for (const tc of speechCases) {
 }
 
 // Android: multiple non-finals in one event (alternative hypotheses)
-// Neither entry is a prefix of the other, so they join as-is during interim display
-// The correct final result in a subsequent event cleans up stale cache entries
+// Batch heuristic should keep only the last non-final entry
 {
   const acc = ["milk bread"];
   const cache = {};
@@ -284,13 +283,9 @@ for (const tc of speechCases) {
     { isFinal: false, transcript: "milk milk milk bread" },
     { isFinal: false, transcript: "milk bread milk bread paneer" },
   ], 0, acc, cache);
-  const errors = [];
-  // Verify that with resultIndex=0, cache entries outside the range are cleaned
-  // Here both entries are within [0,2) so both remain
-  const hasBoth = cache[0] === "milk milk milk bread" && cache[1] === "milk bread milk bread paneer";
-  if (!hasBoth) errors.push(`cache: expected both entries, got ${JSON.stringify(cache)}`);
-  if (errors.length === 0) { pass += 1; console.log(`✓ speech-android-batch`); }
-  else { fail += 1; console.log(`✗ speech-android-batch`); errors.forEach(e => console.log(`   ${e}`)); }
+  const cacheOk = JSON.stringify(cache) === '{"1":"milk bread milk bread paneer"}';
+  if (got === "milk bread milk bread paneer" && cacheOk) { pass += 1; console.log(`✓ speech-android-batch`); }
+  else { fail += 1; console.log(`✗ speech-android-batch: display="${got}" cache=${JSON.stringify(cache)}`); }
 }
 
 // Android: stale cache cleanup on next event
@@ -353,6 +348,30 @@ for (const tc of speechCases) {
 
   if (ok) { pass += 1; console.log(`✓ speech-safari-incremental`); }
   else { fail += 1; console.log(`✗ speech-safari-incremental`); }
+}
+
+// Android: 2 alternative hypotheses in one event (no prefix relationship)
+// Reproduces the user's bug: "milk milk bread" + "milk bread paneer" → only last should survive
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk") ok = false;
+
+  d = processSpeechResults([
+    { isFinal: false, transcript: "milk milk bread" },
+    { isFinal: false, transcript: "milk bread paneer" },
+  ], 0, acc, cache);
+  const cacheOk = JSON.stringify(cache) === '{"1":"milk bread paneer"}';
+  if (d !== "milk bread paneer" || !cacheOk) ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-alternatives`); }
+  else {
+    fail += 1;
+    console.log(`✗ speech-android-alternatives: display="${d}" cache=${JSON.stringify(cache)}`);
+  }
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
