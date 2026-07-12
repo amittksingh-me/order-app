@@ -5,15 +5,14 @@ import { enrichItems } from "./lib/enrich";
 import { formatShoppingList } from "./lib/format";
 import { normalizeItem } from "./lib/normalize";
 import { syncSheet } from "./lib/sheets";
+import { mergeDatabase } from "./lib/product";
+import { getDraft, saveDraft, deleteDraft } from "./lib/draft";
 import {
   getAllMemory,
   putMemory,
   clearMemory,
   deleteMemory,
   importMemory,
-  getDraft,
-  saveDraft,
-  deleteDraft,
 } from "./lib/memory";
 import InputPanel from "./components/InputPanel";
 import ReviewPanel from "./components/ReviewPanel";
@@ -22,28 +21,6 @@ import MemoryPanel from "./components/MemoryPanel";
 const SHEET_URL_KEY = "sheet-csv-url";
 const DEFAULT_SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeqQBp7FYdB6BzQ20Y3Q-rFDuQemV50OpQIetw7LDI0hVBM4NEGYwyLm58s77UEWyp89ygXRixzVTI/pub?gid=0&single=true&output=csv";
-
-// Merge shipped products.json with IndexedDB user overrides into a single
-// products.json-shaped object (user memory wins per key). Used for export.
-function mergeDatabase(builtin, userMemory) {
-  const out = {};
-  for (const [key, v] of Object.entries(builtin)) {
-    const ov = userMemory[key];
-    if (ov) {
-      const merged = { ...v, ...ov };
-      merged.keywords = ov.keywords || v.keywords || [ov.product || v.product];
-      out[key] = merged;
-    } else {
-      out[key] = v;
-    }
-  }
-  for (const [key, v] of Object.entries(userMemory)) {
-    if (!out[key]) {
-      out[key] = { ...v, keywords: v.keywords || [v.product] };
-    }
-  }
-  return out;
-}
 
 export default function App() {
   const [rawInput, setRawInput] = useState("");

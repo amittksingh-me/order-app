@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { processSpeechResults } from "../lib/voice.js";
+import { processSpeechResults } from "../lib/speech.js";
 
 export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClear }) {
   const [listening, setListening] = useState(false);
