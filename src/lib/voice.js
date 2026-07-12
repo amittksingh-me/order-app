@@ -60,21 +60,19 @@ export function parseTranscript(transcript, builtin, userMemory) {
  */
 export function processSpeechResults(newResults, finalsAccum) {
   for (const r of newResults) {
-    if (r.isFinal) finalsAccum.push(r.transcript);
-  }
-
-  const interims = [];
-  for (const r of newResults) {
-    if (r.isFinal) continue;
-    const t = r.transcript;
-    if (interims.length && t.startsWith(interims.at(-1))) {
-      interims[interims.length - 1] = t;
-    } else {
-      interims.push(t);
+    if (r.isFinal && r.transcript !== finalsAccum.at(-1)) {
+      finalsAccum.push(r.transcript);
     }
   }
 
-  let liveSuffix = interims.join(" ");
+  let liveSuffix = "";
+  for (let i = newResults.length - 1; i >= 0; i--) {
+    if (!newResults[i].isFinal) {
+      liveSuffix = newResults[i].transcript;
+      break;
+    }
+  }
+
   const finals = finalsAccum.join(" ");
   const lastFinal = finalsAccum.at(-1) || "";
 

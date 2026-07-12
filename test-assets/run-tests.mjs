@@ -201,6 +201,68 @@ for (const tc of speechCases) {
   }
 }
 
+// --- Android bug reproduction tests ---
+
+// Test: same final result delivered again (Android resultIndex stays at 0)
+{
+  const acc = [];
+  processSpeechResults([{ isFinal: true, transcript: "milk" }], acc);
+  processSpeechResults([{ isFinal: true, transcript: "milk" }], acc); // same final again!
+  const pass1 = JSON.stringify(acc) === `["milk"]`;
+  if (pass1) { pass += 1; console.log(`✓ speech-android-dedup-finals`); }
+  else {
+    fail += 1;
+    console.log(`✗ speech-android-dedup-finals: got ${JSON.stringify(acc)} expected ["milk"] — finals duplicated`);
+  }
+}
+
+// Test: multiple interims in one event that aren't prefixes (Android alternative hypotheses)
+{
+  const acc = ["milk bread"];
+  const got = processSpeechResults([
+    { isFinal: false, transcript: "milk milk milk bread" },
+    { isFinal: false, transcript: "milk bread milk bread paneer" },
+  ], acc);
+  const pass1 = got === "milk bread milk bread paneer";
+  if (pass1) { pass += 1; console.log(`✓ speech-android-nonprefix-interims`); }
+  else {
+    fail += 1;
+    console.log(`✗ speech-android-nonprefix-interims: got "${got}" expected "milk bread milk bread paneer"`);
+  }
+}
+
+// Test: full Android lifecycle simulation (resultIndex=0 each event, repeated finals)
+{
+  const acc = [];
+
+  // Event 1: first interim hypothesis
+  let display = processSpeechResults([{ isFinal: false, transcript: "milk" }], acc);
+  const e1ok = display === "milk" && JSON.stringify(acc) === "[]";
+
+  // Event 2: results[0] now final, results[1] new interim
+  display = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "milk bread" },
+  ], acc);
+  const e2ok = display === "milk bread" && JSON.stringify(acc) === `["milk"]`;
+
+  // Event 3: resultIndex=0 again, same results[0] final, results[1] updated
+  display = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "milk bread paneer" },
+  ], acc);
+  const e3ok = display === "milk bread paneer" && JSON.stringify(acc) === `["milk"]`;
+
+  if (e1ok && e2ok && e3ok) { pass += 1; console.log(`✓ speech-android-lifecycle`); }
+  else {
+    fail += 1;
+    console.log(`✗ speech-android-lifecycle`);
+    if (!e1ok) console.log(`   Event1: display="${display}" acc=${JSON.stringify(acc)}`);
+    if (!e2ok) console.log(`   Event2: display="${display}" acc=${JSON.stringify(acc)}`);
+    if (!e3ok) console.log(`   Event3: display="${display}" acc=${JSON.stringify(acc)}`);
+  }
+}
+
 // Verify that finals accumulator was mutated correctly for speech-004
 const acc004 = [];
 processSpeechResults([
