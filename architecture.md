@@ -147,13 +147,16 @@ User types/pastes voice text
          │
          ├── enrichItems(lines, builtin, userMemory)
          │      │
-         │      ├── expandLines(lines)    → flatten smart‑split unmatched multi‑word lines
-         │      │      └── parseTranscript() via greedy left‑to‑right DB matching
-         │      │
-         │      ├── detectDuplicates(lines)  (now sees all sub‑phrases)
-         │      │      │
-         │      │      └── normalizeItem(line) per line
-         │      │      └── group by key, accumulate count
+          │      ├── expandLines(lines)    → flatten smart‑split unmatched multi‑word lines
+          │      │      ├── compressToMatch(line) — noise filter (brand/size/number) + attribute compression using buildDisplayName coverage
+          │      │      └── if compressed < 70% coverage → parseTranscript() greedy left‑to‑right DB matching
+          │      │            └── product‑keys heuristic: all tokens same product → keep original; different products → split
+          │      │      └── prefixMatchUserMemory() on each expanded line (partial prefix vs CSV‑synced user memory keys)
+          │      │
+          │      ├── detectDuplicates(lines)  (now sees all sub‑phrases)
+          │      │      │
+          │      │      └── normalizeItem(line) per line
+          │      │      └── group by key, accumulate count
          │      │
          │      ├── For each group:
          │      │      │
@@ -165,11 +168,14 @@ User types/pastes voice text
          │      │      │      ├── 4. Levenshtein fuzzy match
          │      │      │      └── 5. Unknown (matched: false)
          │      │      │
-         │      │      └── Build enriched item object
-         │      │
-         │      ├── sortItems(items)      → unmatched first, then brand → product → size
-         │      │
-         │      └── → items[] (enriched)
+          │      │      └── Build enriched item object
+          │      │            └── canonical key: matched items use normalizeItem(preferredProduct); unknown items use normalizeItem(input)
+          │      │
+          │      ├── sortItems(items)      → unmatched first, then brand → product → size
+          │      │
+          │      ├── wordLeakFilter(items) → remove unknown single‑word items contained in any matched preferredProduct
+          │      │
+          │      └── → items[] (enriched)
          │
          ├── setItems(result)            → ReviewPanel renders
          │
@@ -198,22 +204,24 @@ User types/pastes voice text
 ### `lib/lookup.js`
 | Function | Purpose |
 |---|---|
-| `lookupProduct(key, builtin, userMemory)` | 5-step lookup: user memory exact → user keyword → builtin exact → builtin keyword → fuzzy → unknown |
+| `lookupProduct(key, builtin, userMemory)` | 6-step lookup: user memory exact → user keyword → builtin exact → builtin keyword → fuzzy → unknown. Does NOT internally prefix‑match — that is handled externally by `prefixMatchUserMemory` |
+| `prefixMatchUserMemory(key, userMemory)` | Exported separately. Checks if `key` is a prefix of any user memory key. Called by `expandLines` and `enrichItems` for clipboard re‑paste matching, NOT by `parseTranscript` (prevents partial‑match pollution during voice) |
 | `levenshtein(a, b)` (private) | Distance for fuzzy matching; threshold = `min(2, max(1, floor(candidateLen/4)))` |
 | `buildKeywordIndex(builtin)` (private) | Maps builtin keys + keywords → entry keys |
 
 ### `lib/enrich.js`
 | Function | Purpose |
 |---|---|
-| `enrichItems(lines, builtin, userMemory)` | Full pipeline: `expandLines` → `detectDuplicates` → lookup → `sortItems` |
-| `expandLines(lines, builtin, userMemory)` | Flatten input: unmatched multi‑word lines are split by `parseTranscript`, matched lines pass through |
+| `enrichItems(lines, builtin, userMemory)` | Full pipeline: `expandLines` → `detectDuplicates` → lookup → canonical key assignment → `sortItems` → word‑leak filter. Matched items get `normalizeItem(preferredProduct)` as their canonical key; unknown items use `normalizeItem(input)` |
+| `expandLines(lines, builtin, userMemory)` | Flatten input: noise‑filter (brand/size/number via `isNoise`), `compressToMatch` via `buildDisplayName` coverage, if < 70% → greedy `parseTranscript()`. Product‑keys heuristic: all tokens map to same product → keep original as single line; different products → split into individual tokens. Then call `prefixMatchUserMemory()` on each expanded line |
 | `sortItems(items)` | Unmatched first, then brand → product → size (single sort point for review + clipboard) |
+| `wordLeakFilter(items)` | After sort, removes unknown single‑word items whose text is contained (as substring) in any matched item's `preferredProduct`. Prevents transcript fragments leaking into clipboard |
 | `reLookup(item, builtin, userMemory)` | Re-run lookup after user edits an item's preferred product |
 
 ### `lib/voice.js`
 | Function | Purpose |
 |---|---|
-| `parseTranscript(transcript, builtin, userMemory)` | Greedy left-to-right phrase matcher. Strips filler words, tries longest DB-matching phrase first, falls back to single words. Used by `expandLines()` in the enrichment pipeline |
+| `parseTranscript(transcript, builtin, userMemory)` | Greedy left-to-right phrase matcher. Strips filler words (`"and"`, `"the"`, `"a"`, `"an"`, `"or"`, `"for"`, `"of"`, `"to"`, `"in"`, `"my"`, etc.) and single‑char tokens. Tries longest DB‑matching phrase first (up to 4 words), falls back to single words. Used by `expandLines()` in the enrichment pipeline — NOT by the Web Speech API handler directly |
 
 ### `lib/format.js`
 | Function | Purpose |
@@ -285,16 +293,28 @@ Only `userProducts` is used. There is no separate `userPreferences` store. All u
 Tests are `.txt` input files with corresponding `.expected.json` files, run by `test-assets/run-tests.mjs`. This keeps tests readable and easy to add without a test framework dependency.
 
 ### 7.7 Voice auto-stop on silence; tap to force-stop
-The mic is tap-to-record (not toggle). After 2 seconds of silence, the recognition session ends and pending transcript is flushed as a line. Tapping again while recording force-stops and also flushes. This avoids leftover "half items" from short pauses in the middle of speaking.
+The mic is tap-to-record (not toggle). `interimResults: true` streams results every ~200–500ms for live preview. Interims are built fresh from the current event only (no cross‑event cache to avoid stale entries). Android's cumulative batch style is collapsed via prefix dedup; Safari's per‑index stream is kept as‑is. The live suffix is trimmed against finalized text to prevent duplication. After 2 seconds of silence the session ends and pending transcript is flushed. Tapping again force-stops and also flushes.
 
 ### 7.8 Single sort point in enrichItems
 `sortItems()` runs once at the end of `enrichItems` — unmatched first, then by brand → product → size. Removing `sort()` from `formatShoppingList` ensures review table and clipboard always display the same order.
 
-### 7.9 Status dots instead of text badges
-Match status is shown as an 8px coloured circle via `::before` on `.pc-name` (green = matched, amber = fuzzy, red = unknown). This is visually lighter and avoids cluttering the row with text pills.
+### 7.9 Status dots (desktop) and left‑border accent (mobile)
+Match status is shown as an 8px coloured circle via `::before` on `.pc-name` (green = matched, amber = fuzzy, red = unknown) on desktop. On mobile (<600px) cards use a 4px left‑border colour instead — more visually impactful without crowding the card content.
 
 ### 7.10 Delete with re-copy in review
 Each review row has a delete (X) button. After deletion the list is re-copied to clipboard. `handleLaunch()` uses the current items state if already enriched, so deleting then launching preserves the removals.
+
+### 7.11 Prefix match extracted from lookupProduct
+`prefixMatchUserMemory` is exported separately from `lookup.js` and NOT called inside `lookupProduct`. It is only invoked by `expandLines` and `enrichItems` for clipboard re‑paste matching. This prevents `parseTranscript` from partial‑prefix‑matching mid‑speech (which would pull words into the wrong phrase).
+
+### 7.12 Product‑keys heuristic
+In `expandLines`, after splitting a low‑coverage line via `parseTranscript`, the heuristic checks whether all resulting tokens resolve to the same product. If yes, the original line is kept intact (prevents oversplitting). If tokens map to different products, each is kept as a separate line.
+
+### 7.13 Word‑leak filter
+After sorting, unknown single‑word items that are substrings of any matched item's `preferredProduct` are removed. Without this, transcript fragments like `"paneer"` from `"milk bread paneer"` would leak into the clipboard alongside `"paneer"` as a separate matched line.
+
+### 7.14 Canonical normalized keys
+Matched items use `normalizeItem(preferredProduct)` as their canonical key, not `normalizeItem(input)`. This ensures deterministic clipboard output across re‑paste cycles — `"milkk"` always becomes `"Milk"`, not repeating the misspelling.
 
 ---
 

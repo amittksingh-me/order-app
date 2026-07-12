@@ -16,10 +16,12 @@
 | R1.3 | Match a normalized key against user memory (IndexedDB) | ✅ | `lookupProduct()` — checks exact key match then keyword match on user entries |
 | R1.4 | Match a normalized key against the built-in product database | ✅ | `lookupProduct()` — checks exact key, keyword index, then Levenshtein fuzzy match |
 | R1.5 | Return structured enriched item objects | ✅ | Fields: `id`, `input`, `normalized`, `quantity`, `matched`, `source`, `fuzzy`, `product`, `preferredProduct`, `brand`, `size`, `alternatives`, `category`, `editable` |
-| R1.6 | Smart split unmatched lines into sub-phrases | ✅ | `parseTranscript()` — greedy left-to-right matching against DB; integrated into `enrichItems` via `expandLines()` to flatten input before dedup |
+| R1.6 | Smart split unmatched lines into sub-phrases | ✅ | `expandLines()` — noise filter (brand/size/number removal), `compressToMatch()` using `buildDisplayName` for coverage check, then greedy left-to-right `parseTranscript()` on low‑coverage lines. Product‑keys heuristic: if all tokens map to same product → keep original line; different products → split into individual tokens. Then calls `prefixMatchUserMemory()` on each expanded line |
 | R1.7 | Re-run lookup for a single edited item | ✅ | `reLookup()` — normalizes the edited string and re-queries |
 | R1.8 | Unknown items are never silently dropped | ✅ | Pass through as unmatched, `source: "unknown"` |
 | R1.9 | Single sort: unmatched first, then brand → product → size | ✅ | `sortItems()` at end of `enrichItems` — review table and clipboard always match |
+| R1.10 | Word‑leak filter after sort | ✅ | After sorting, removes unknown single‑word items that are substrings of any matched item's `preferredProduct`. Prevents transcript fragments (e.g. `"paneer"` from `"milk bread paneer"`) leaking into clipboard |
+| R1.11 | Canonical normalized keys | ✅ | Matched items use `normalizeItem(preferredProduct)` instead of `normalizeItem(input)`. Guarantees deterministic clipboard output across re‑paste cycles (e.g. `"milk"` always becomes `"Milk"`, not `"milkk"`) |
 
 ---
 
@@ -57,8 +59,9 @@
 | R3.2 | Supports typing and paste | ✅ | Standard `<textarea>` |
 | R3.3 | One item per line | ✅ | Split on `\n` at enrichment time |
 | R3.4 | Ignores empty lines | ✅ | `detectDuplicates()` skips empty/normalized-to-empty lines |
-| R3.5 | Voice-to-text via Web Speech API | ✅ | Mic inside textarea; tap once, auto‑stops after 2s silence; `en-IN` locale |
+| R3.5 | Voice-to-text via Web Speech API | ✅ | `interimResults: true`, `continuous: true`, `en-IN` locale. Tap mic once, auto‑stops after 2s silence. Live preview updates every ~200–500ms. Cross‑platform: Safari emits per‑index results, Android emits cumulative batches — both handled with current‑event‑only interim extraction, prefix dedup, and suffix trimming against finalized text |
 | R3.6 | "Prep List" button | ✅ | Enrich + auto-copy to clipboard |
+| R3.8 | Live interim preview without duplication | ✅ | Interims built fresh from each event's non‑final results (no cross‑event cache). Android's cumulative stack collapsed via prefix dedup. Live suffix trimmed against finals to avoid repeating already‑finalized words. Result: smooth evolving sentence on all platforms |
 | R3.7 | "Launch BigBasket" button | ✅ | Enrich + copy + navigate to bigbasket.com |
 
 ---
@@ -67,8 +70,8 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R4.1 | Display enriched items in a structured table | ✅ | Columns: Brand, Product, Size, Qty; status indicated by coloured dot |
-| R4.2 | Indicate match status per item | ✅ | Coloured dot via `::before`: green=matched, amber=fuzzy, red=unknown |
+| R4.1 | Display enriched items in a structured table | ✅ | Columns: (delete), Brand, Product, Size, Qty; delete button first for mobile visibility |
+| R4.2 | Indicate match status per item | ✅ | Desktop: coloured dot via `::before` (green=matched, amber=fuzzy, red=unknown). Mobile (<600px): 4px left‑border accent on card layout |
 | R4.3 | Indicate match source | ✅ | "(memory)" badge for user-memory matches |
 | R4.4 | Delete item from review | ✅ | X button per row; re‑copies to clipboard after deletion |
 | R4.5 | Launch BB after deletion preserves removed items | ✅ | `handleLaunch` uses current items state if already enriched |
@@ -78,7 +81,7 @@
 | R4.9 | Auto-copy enriched list to clipboard | ✅ | Comma+space joined; happens after enrich, delete, or launch |
 | R4.10 | Manual "Copy Shopping List" button | ❌ | Not present — copy is automatic only |
 | R4.11 | Quantity included in clipboard text | ❌ | Output is `"Brand Product Size"` only (no `xN` suffix) |
-| R4.12 | "New list" button to reset | ✅ | Clears input and enriched results |
+| R4.12 | Mobile‑friendly card layout with status accent | ✅ | At <600px table converts to flex‑based cards. Product name prominent (bold, divider). Delete button pinned top‑right. Each card has 4px left border coloured by match status (green/amber/red) |
 
 ---
 
@@ -112,8 +115,8 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — 11 file-based + 5 inline `parseTranscript` tests = 16 total |
-| R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown-first sort | ✅ | |
+| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — 12 file-based input + 5 `parseTranscript` + 2 paste‑cycle regression + 3 paste‑noise = 22 tests total |
+| R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑noise (attribute words) | ✅ | |
 | R7.3 | Every bug fix adds a regression test | ✅ | Pattern established |
 
 ---
