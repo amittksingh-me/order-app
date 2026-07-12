@@ -222,6 +222,7 @@ User types/pastes voice text
 | Function | Purpose |
 |---|---|
 | `parseTranscript(transcript, builtin, userMemory)` | Greedy left-to-right phrase matcher. Strips filler words (`"and"`, `"the"`, `"a"`, `"an"`, `"or"`, `"for"`, `"of"`, `"to"`, `"in"`, `"my"`, etc.) and single‑char tokens. Tries longest DB‑matching phrase first (up to 4 words), falls back to single words. Used by `expandLines()` in the enrichment pipeline — NOT by the Web Speech API handler directly |
+| `processSpeechResults(newResults, resultIndex, finalsAccum, interimCache)` | Core live-preview engine. Stores non-finals in a cross-event `interimCache` (keyed by result index) with platform-specific logic: (1) iOS single-word-at-index-0 → auto-increment storeIdx to avoid overwrite. (2) Android alternatives → handled by word-overlap detection in the distinct loop (≥50% shared tokens → replace). (3) Finals use case-insensitive `startsWith` comparison to handle Android's cumulative transcript pattern. Interims are lowered for consistent dedup; finals preserve original casing |
 
 ### `lib/format.js`
 | Function | Purpose |
@@ -293,7 +294,7 @@ Only `userProducts` is used. There is no separate `userPreferences` store. All u
 Tests are `.txt` input files with corresponding `.expected.json` files, run by `test-assets/run-tests.mjs`. This keeps tests readable and easy to add without a test framework dependency.
 
 ### 7.7 Voice auto-stop on silence; tap to force-stop
-The mic is tap-to-record (not toggle). `interimResults: true` streams results every ~200–500ms for live preview. Interims are built fresh from the current event only (no cross‑event cache to avoid stale entries). Android's cumulative batch style is collapsed via prefix dedup; Safari's per‑index stream is kept as‑is. The live suffix is trimmed against finalized text to prevent duplication. After 2 seconds of silence the session ends and pending transcript is flushed. Tapping again force-stops and also flushes.
+The mic is tap-to-record (not toggle). `interimResults: true` streams results every ~200–500ms for live preview. The live preview is built by `processSpeechResults()` using a cross-event `interimCache` (React ref) with word-overlap alternative detection, iOS sequence handling, and case-insensitive cumulative finals dedup. After 2 seconds of silence the session ends and pending transcript is flushed. Tapping again force-stops and also flushes.
 
 ### 7.8 Single sort point in enrichItems
 `sortItems()` runs once at the end of `enrichItems` — unmatched first, then by brand → product → size. Removing `sort()` from `formatShoppingList` ensures review table and clipboard always display the same order.
@@ -315,6 +316,15 @@ After sorting, unknown single‑word items that are substrings of any matched it
 
 ### 7.14 Canonical normalized keys
 Matched items use `normalizeItem(preferredProduct)` as their canonical key, not `normalizeItem(input)`. This ensures deterministic clipboard output across re‑paste cycles — `"milkk"` always becomes `"Milk"`, not repeating the misspelling.
+
+### 7.15 Cross-event interim cache instead of per-event snapshot
+The initial approach built the live preview fresh from each event's non‑final results. This caused stale entries on iOS (single-word events at index 0 overwriting prior words) and missed alternatives on Android (separate events at different indices). Switching to a cross-event `interimCache` (keyed by resultIndex) solved both: iOS words accumulate at sequential indices; Android alternatives are collapsed via word‑overlap check in the distinct loop.
+
+### 7.16 Word‑overlap detection replaces batch heuristic
+The initial Android batch heuristic deleted all but the last non‑final in a single event (resultIndex=0, ≥2 non‑finals). This broke iOS which sends `[accumulatedText, space‑prefixedNewWord]` pairs — the accumulated text was deleted, causing flashing. The batch heuristic was removed; word‑overlap detection (≥50% shared tokens between consecutive cache entries → replace) handles Android alternatives without cache deletion.
+
+### 7.17 Lowercased interims, preserved finals
+Interim transcripts are stored `.trim().toLowerCase()` to ensure consistent prefix‑matching and overlap detection across platforms. Final transcripts preserve original casing — the `startsWith` comparison uses `.toLowerCase()` on both sides for case‑insensitive dedup, then stores the original‑cased transcript.
 
 ---
 

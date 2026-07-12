@@ -143,7 +143,7 @@ function compressToMatch(clean, builtin, userMemory) {
 export function enrichItems(lines, builtin, userMemory) {
   const expanded = expandLines(lines, builtin, userMemory);
   const groups = detectDuplicates(expanded);
-  const result = [];
+  let result = [];
   groups.forEach((g) => {
     let look = lookupProduct(g.key, builtin, userMemory);
     if (!look.matched) {
@@ -173,6 +173,17 @@ export function enrichItems(lines, builtin, userMemory) {
     };
     result.push(base);
   });
+  // Post-dedup: merge items with the same canonical normalized key
+  const merged = new Map();
+  for (const item of result) {
+    const key = item.normalized;
+    if (merged.has(key)) {
+      merged.get(key).quantity += item.quantity;
+    } else {
+      merged.set(key, { ...item });
+    }
+  }
+  result = Array.from(merged.values());
   const sorted = sortItems(result);
   // Filter word-leaks: unknown single-word items that are embedded in matched product names
   const matchedNames = new Set(

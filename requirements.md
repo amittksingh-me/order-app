@@ -59,9 +59,9 @@
 | R3.2 | Supports typing and paste | ✅ | Standard `<textarea>` |
 | R3.3 | One item per line | ✅ | Split on `\n` at enrichment time |
 | R3.4 | Ignores empty lines | ✅ | `detectDuplicates()` skips empty/normalized-to-empty lines |
-| R3.5 | Voice-to-text via Web Speech API | ✅ | `interimResults: true`, `continuous: true`, `en-IN` locale. Tap mic once, auto‑stops after 2s silence. Live preview updates every ~200–500ms. Cross‑platform: Safari emits per‑index results, Android emits cumulative batches — both handled with current‑event‑only interim extraction, prefix dedup, and suffix trimming against finalized text |
+| R3.5 | Voice-to-text via Web Speech API | ✅ | `interimResults: true`, `continuous: true`, `en-IN` locale. Tap mic once, auto‑stops after 2s silence. Live preview via `processSpeechResults()` with a cross-event `interimCache` (React ref). Three platform models handled: iOS (single words at index 0) → stored at next free index; iOS/Safari (accumulated transcript) → prefix-deduped against prior entry, replaces cache[0]; Android (cumulative finals) → case-insensitive `startsWith` replacement in finals accumulator; Android (alternatives) → word-overlap detection (≥50% shared tokens) in distinct loop replaces instead of appends. Interims stored `.trim().toLowerCase()` for case-consistent comparisons; finals preserve original casing |
 | R3.6 | "Prep List" button | ✅ | Enrich + auto-copy to clipboard |
-| R3.8 | Live interim preview without duplication | ✅ | Interims built fresh from each event's non‑final results (no cross‑event cache). Android's cumulative stack collapsed via prefix dedup. Live suffix trimmed against finals to avoid repeating already‑finalized words. Result: smooth evolving sentence on all platforms |
+| R3.8 | Live interim preview without duplication | ✅ | Built from cross-event `interimCache` with prefix dedup, word-overlap alternative detection (≥50% tokens shared → replace), and suffix trimmed against finals |
 | R3.7 | "Launch BigBasket" button | ✅ | Enrich + copy + navigate to bigbasket.com |
 
 ---
@@ -115,9 +115,9 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — 12 file-based input + 5 `parseTranscript` + 2 paste‑cycle regression + 3 paste‑noise = 22 tests total |
+| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — 12 file-based input + 5 `parseTranscript` + 2 paste‑cycle regression + 3 paste‑noise + 24 speech = 47 tests total |
 | R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑noise (attribute words) | ✅ | |
-| R7.3 | Every bug fix adds a regression test | ✅ | Pattern established |
+| R7.3 | Every bug fix adds a regression test | ✅ | Pattern established — 47 tests covering all platforms |
 
 ---
 
