@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { processSpeechResults } from "../lib/voice.js";
 
 export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClear }) {
@@ -10,6 +10,9 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
   const preRecordingTextRef = useRef(null);
   const interimCacheRef = useRef({});
   const textareaRef = useRef(null);
+  const debugMode = useMemo(() => new URLSearchParams(window.location.search).has('debug'), []);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [debugLog, setDebugLog] = useState([]);
 
   const handleClear = () => {
     onClear();
@@ -42,6 +45,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
           transcript: event.results[i][0].transcript,
         });
       }
+      if (debugMode) setDebugLog(prev => [{ time: Date.now(), resultIndex: event.resultIndex, results: newResults }, ...prev].slice(0, 50));
       const display = processSpeechResults(newResults, event.resultIndex, transcriptAccumRef.current, interimCacheRef.current);
       const pre = preRecordingTextRef.current;
       onChangeRef.current(pre ? pre + "\n" + display : display);
@@ -79,6 +83,10 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
     };
   }, [supported]);
 
+  function handleCopyLog() {
+    navigator.clipboard.writeText(JSON.stringify(debugLog, null, 2));
+  }
+
   function toggleMic() {
     const recog = recognitionRef.current;
     if (!recog) return;
@@ -108,6 +116,11 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
           placeholder={"Type or speak items, one per line...\n\ne.g.\nmilk\nbread\neggs\ntomato"}
           rows={8}
         />
+        {debugMode && (
+          <button className="debug-btn" onClick={() => setDebugOpen(o => !o)} type="button" title="Speech debug log">
+            🐛
+          </button>
+        )}
         {supported && (
           <button
             className={`mic-btn ${listening ? "listening" : ""}`}
@@ -144,6 +157,33 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
           </button>
         )}
       </div>
+{debugMode && debugOpen && (
+  <div className="debug-panel">
+    <div className="debug-header">
+      <span className="debug-title">Speech Events ({debugLog.length})</span>
+      <div className="debug-actions">
+        <button onClick={handleCopyLog} type="button" className="btn-link">Copy</button>
+        <button onClick={() => setDebugOpen(false)} type="button" className="btn-link">×</button>
+      </div>
+    </div>
+    <div className="debug-entries">
+      {debugLog.length === 0 ? (
+        <div className="debug-empty">No events yet</div>
+      ) : (
+        debugLog.map((e, i) => (
+          <div key={i} className="debug-entry">
+            <span className="debug-idx">idx={e.resultIndex}</span>
+            {e.results.map((r, j) => (
+              <span key={j} className={`debug-result${r.isFinal ? " final" : ""}`}>
+                [{r.isFinal ? "✓" : "~"}] {r.transcript}
+              </span>
+            ))}
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+)}
       <div className="input-actions">
         <button className="btn-primary" onClick={onEnrich} type="button">
           Prep List
