@@ -29,25 +29,40 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
 
     const recog = new SpeechRecognition();
     recog.continuous = true;
-    recog.interimResults = false;
+    recog.interimResults = true;
     recog.lang = "en-IN";
 
     recog.onresult = (event) => {
-      let currentFinal = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          currentFinal += (currentFinal ? " " : "") + result[0].transcript;
+        if (event.results[i].isFinal) {
+          transcriptAccumRef.current.push(event.results[i][0].transcript);
         }
       }
 
-      if (currentFinal) {
-        transcriptAccumRef.current.push(currentFinal);
+      const interims = [];
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) continue;
+        const t = event.results[i][0].transcript;
+        if (interims.length && t.startsWith(interims.at(-1))) {
+          interims[interims.length - 1] = t;
+        } else {
+          interims.push(t);
+        }
       }
 
+      let liveSuffix = interims.join(" ");
       const finals = transcriptAccumRef.current.join(" ");
+      const lastFinal = transcriptAccumRef.current.at(-1) || "";
+
+      if (liveSuffix && finals.includes(liveSuffix)) {
+        liveSuffix = "";
+      } else if (liveSuffix && lastFinal && liveSuffix.startsWith(lastFinal)) {
+        liveSuffix = liveSuffix.slice(lastFinal.length).trim();
+      }
+
+      const display = finals + (liveSuffix ? " " + liveSuffix : "");
       const pre = preRecordingTextRef.current;
-      onChangeRef.current(pre ? pre + "\n" + finals : finals);
+      onChangeRef.current(pre ? pre + "\n" + display : display);
 
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = setTimeout(() => {
