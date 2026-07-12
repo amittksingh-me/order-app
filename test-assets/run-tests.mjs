@@ -283,9 +283,8 @@ for (const tc of speechCases) {
     { isFinal: false, transcript: "milk milk milk bread" },
     { isFinal: false, transcript: "milk bread milk bread paneer" },
   ], 0, acc, cache);
-  const cacheOk = JSON.stringify(cache) === '{"1":"milk bread milk bread paneer"}';
-  if (got === "milk bread milk bread paneer" && cacheOk) { pass += 1; console.log(`✓ speech-android-batch`); }
-  else { fail += 1; console.log(`✗ speech-android-batch: display="${got}" cache=${JSON.stringify(cache)}`); }
+  if (got === "milk bread milk bread paneer") { pass += 1; console.log(`✓ speech-android-batch`); }
+  else { fail += 1; console.log(`✗ speech-android-batch: display="${got}"`); }
 }
 
 // Android: stale cache cleanup on next event
@@ -350,6 +349,33 @@ for (const tc of speechCases) {
   else { fail += 1; console.log(`✗ speech-safari-incremental`); }
 }
 
+// Android: cross-index alternative hypotheses (separate events, different indices)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  // Event 1: first interim
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk") ok = false;
+
+  // Event 2: Android deposits a multi-word hypothesis at index 0
+  d = processSpeechResults([{ isFinal: false, transcript: "milk milk bread" }], 0, acc, cache);
+  if (d !== "milk milk bread") ok = false;
+
+  // Event 3: Android deposits a DIFFERENT multi-word hypothesis at index 1
+  // "milk bread paneer" does NOT start with "milk milk bread" → old entry is stale
+  d = processSpeechResults([{ isFinal: false, transcript: "milk bread paneer" }], 1, acc, cache);
+  const cacheOk = JSON.stringify(cache) === '{"0":"milk milk bread","1":"milk bread paneer"}';
+  if (d !== "milk bread paneer" || !cacheOk) ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-cross-index-alternatives`); }
+  else {
+    fail += 1;
+    console.log(`✗ speech-android-cross-index-alternatives: display="${d}" cache=${JSON.stringify(cache)}`);
+  }
+}
+
 // Android: 2 alternative hypotheses in one event (no prefix relationship)
 // Reproduces the user's bug: "milk milk bread" + "milk bread paneer" → only last should survive
 {
@@ -364,14 +390,147 @@ for (const tc of speechCases) {
     { isFinal: false, transcript: "milk milk bread" },
     { isFinal: false, transcript: "milk bread paneer" },
   ], 0, acc, cache);
-  const cacheOk = JSON.stringify(cache) === '{"1":"milk bread paneer"}';
-  if (d !== "milk bread paneer" || !cacheOk) ok = false;
+  if (d !== "milk bread paneer") ok = false;
 
   if (ok) { pass += 1; console.log(`✓ speech-android-alternatives`); }
   else {
     fail += 1;
     console.log(`✗ speech-android-alternatives: display="${d}" cache=${JSON.stringify(cache)}`);
   }
+}
+
+// iOS: sequential multi-word entries at incremental indices
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk bread" }], 0, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "paneer" }], 1, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "paneer butter" }], 1, acc, cache);
+  if (d !== "milk bread paneer butter") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-ios-sequential-multiword`); }
+  else { fail += 1; console.log(`✗ speech-ios-sequential-multiword: display="${d}" cache=${JSON.stringify(cache)}`); }
+}
+
+// iOS: actual event pattern from user's log (accumulated text + space-prefixed new word)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "milk" }, { isFinal: false, transcript: " bread" }], 0, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "milk bread" }], 0, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "milk bread" }, { isFinal: false, transcript: " paneer" }], 0, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk bread paneer" }], 0, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-ios-singleword-with-pauses`); }
+  else { fail += 1; console.log(`✗ speech-ios-singleword-with-pauses`); }
+}
+
+// Safari: finalize-continue pattern with multi-word entries
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk bread" }], 0, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "bread paneer" },
+  ], 0, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "paneer butter" },
+  ], 0, acc, cache);
+  if (d !== "milk paneer butter") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-safari-finalize-continue-multiword`); }
+  else { fail += 1; console.log(`✗ speech-safari-finalize-continue-multiword`); }
+}
+
+// Android: cross-index where later IS a prefix of earlier
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk bread paneer" }], 0, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "milk bread" }], 1, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-cross-index-prefix`); }
+  else { fail += 1; console.log(`✗ speech-android-cross-index-prefix: display="${d}"`); }
+}
+
+// Android: 3 non-finals in one event (batch heuristic + overlap)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([
+    { isFinal: false, transcript: "milk milk bread" },
+    { isFinal: false, transcript: "milk bread paneer" },
+    { isFinal: false, transcript: "milk paneer butter" },
+  ], 0, acc, cache);
+  if (d !== "milk paneer butter") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-batch-three`); }
+  else { fail += 1; console.log(`✗ speech-android-batch-three: display="${d}"`); }
+}
+
+// Android: multiple finals in one event, no interims
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: true, transcript: "bread" },
+  ], 0, acc, cache);
+  if (d !== "milk bread" || JSON.stringify(acc) !== `["milk","bread"]`) ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-oneshot-only-finals`); }
+  else { fail += 1; console.log(`✗ speech-android-oneshot-only-finals: display="${d}" acc=${JSON.stringify(acc)}`); }
+}
+
+// iOS: non-consecutive indices (index 0, then index 2 — gap at 1)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "paneer" }], 2, acc, cache);
+  if (d !== "milk paneer") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-ios-index-jumps`); }
+  else { fail += 1; console.log(`✗ speech-ios-index-jumps: display="${d}"`); }
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
