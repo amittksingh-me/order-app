@@ -138,6 +138,7 @@ const speechCases = [
     results: [{ isFinal: false, transcript: "paneer" }],
     finals: ["milk bread paneer"],
     expect: "milk bread paneer",
+    resultIndex: 1,
   },
   {
     name: "speech-002",
@@ -149,6 +150,7 @@ const speechCases = [
     ],
     finals: ["milk bread"],
     expect: "milk bread paneer",
+    resultIndex: 0,
   },
   {
     name: "speech-003",
@@ -156,6 +158,7 @@ const speechCases = [
     results: [{ isFinal: false, transcript: "paneer" }],
     finals: ["milk bread"],
     expect: "milk bread paneer",
+    resultIndex: 2,
   },
   {
     name: "speech-004",
@@ -167,6 +170,7 @@ const speechCases = [
     ],
     finals: [],
     expect: "milk bread paneer",
+    resultIndex: 0,
   },
   {
     name: "speech-005",
@@ -174,6 +178,7 @@ const speechCases = [
     results: [{ isFinal: false, transcript: "milk" }],
     finals: [],
     expect: "milk",
+    resultIndex: 0,
   },
   {
     name: "speech-006",
@@ -181,12 +186,14 @@ const speechCases = [
     results: [{ isFinal: false, transcript: "bread" }],
     finals: ["milk"],
     expect: "milk bread",
+    resultIndex: 1,
   },
 ];
 
 for (const tc of speechCases) {
   const acc = [...tc.finals];
-  const got = processSpeechResults(tc.results, acc);
+  const cache = {};
+  const got = processSpeechResults(tc.results, tc.resultIndex, acc, cache);
   const errors = [];
   if (got !== tc.expect) {
     errors.push(`display: got "${got}" expected "${tc.expect}"`);
@@ -201,81 +208,151 @@ for (const tc of speechCases) {
   }
 }
 
-// --- Android bug reproduction tests ---
+// --- Multi-event scenarios (Safari and Android) ---
 
-// Test: same final result delivered again (Android resultIndex stays at 0)
+// Safari: 3 sequential events with incremental resultIndex
 {
   const acc = [];
-  processSpeechResults([{ isFinal: true, transcript: "milk" }], acc);
-  processSpeechResults([{ isFinal: true, transcript: "milk" }], acc); // same final again!
-  const pass1 = JSON.stringify(acc) === `["milk"]`;
-  if (pass1) { pass += 1; console.log(`✓ speech-android-dedup-finals`); }
+  const cache = {};
+  let ok = true;
+
+  // Event 1: resultIndex=0, first word interim
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk" || JSON.stringify(acc) !== "[]") ok = false;
+
+  // Event 2: resultIndex=1, second word interim (Safari adds new index)
+  d = processSpeechResults([{ isFinal: false, transcript: "bread" }], 1, acc, cache);
+  if (d !== "milk bread" || JSON.stringify(acc) !== "[]") ok = false;
+
+  // Event 3: resultIndex=2, third word interim
+  d = processSpeechResults([{ isFinal: false, transcript: "paneer" }], 2, acc, cache);
+  if (d !== "milk bread paneer" || JSON.stringify(acc) !== "[]") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-safari-multi-event`); }
   else {
     fail += 1;
-    console.log(`✗ speech-android-dedup-finals: got ${JSON.stringify(acc)} expected ["milk"] — finals duplicated`);
+    console.log(`✗ speech-safari-multi-event`);
   }
 }
 
-// Test: multiple interims in one event that aren't prefixes (Android alternative hypotheses)
+// Android: same final result delivered again (resultIndex stays at 0)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  processSpeechResults([{ isFinal: true, transcript: "milk" }], 0, acc, cache);
+  processSpeechResults([{ isFinal: true, transcript: "milk" }], 0, acc, cache);
+  if (JSON.stringify(acc) !== `["milk"]`) ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-dedup-finals`); }
+  else { fail += 1; console.log(`✗ speech-android-dedup-finals: acc=${JSON.stringify(acc)}`); }
+}
+
+// Android: full lifecycle (resultIndex=0 each event, repeated finals, cache cleared)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk" || JSON.stringify(acc) !== "[]") ok = false;
+
+  d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "milk bread" },
+  ], 0, acc, cache);
+  if (d !== "milk bread" || JSON.stringify(acc) !== `["milk"]`) ok = false;
+
+  d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "milk bread paneer" },
+  ], 0, acc, cache);
+  if (d !== "milk bread paneer" || JSON.stringify(acc) !== `["milk"]`) ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-lifecycle`); }
+  else { fail += 1; console.log(`✗ speech-android-lifecycle`); }
+}
+
+// Android: multiple non-finals in one event (alternative hypotheses)
+// Neither entry is a prefix of the other, so they join as-is during interim display
+// The correct final result in a subsequent event cleans up stale cache entries
 {
   const acc = ["milk bread"];
+  const cache = {};
   const got = processSpeechResults([
     { isFinal: false, transcript: "milk milk milk bread" },
     { isFinal: false, transcript: "milk bread milk bread paneer" },
-  ], acc);
-  const pass1 = got === "milk bread milk bread paneer";
-  if (pass1) { pass += 1; console.log(`✓ speech-android-nonprefix-interims`); }
-  else {
-    fail += 1;
-    console.log(`✗ speech-android-nonprefix-interims: got "${got}" expected "milk bread milk bread paneer"`);
-  }
+  ], 0, acc, cache);
+  const errors = [];
+  // Verify that with resultIndex=0, cache entries outside the range are cleaned
+  // Here both entries are within [0,2) so both remain
+  const hasBoth = cache[0] === "milk milk milk bread" && cache[1] === "milk bread milk bread paneer";
+  if (!hasBoth) errors.push(`cache: expected both entries, got ${JSON.stringify(cache)}`);
+  if (errors.length === 0) { pass += 1; console.log(`✓ speech-android-batch`); }
+  else { fail += 1; console.log(`✗ speech-android-batch`); errors.forEach(e => console.log(`   ${e}`)); }
 }
 
-// Test: full Android lifecycle simulation (resultIndex=0 each event, repeated finals)
+// Android: stale cache cleanup on next event
 {
   const acc = [];
-
-  // Event 1: first interim hypothesis
-  let display = processSpeechResults([{ isFinal: false, transcript: "milk" }], acc);
-  const e1ok = display === "milk" && JSON.stringify(acc) === "[]";
-
-  // Event 2: results[0] now final, results[1] new interim
-  display = processSpeechResults([
-    { isFinal: true, transcript: "milk" },
-    { isFinal: false, transcript: "milk bread" },
-  ], acc);
-  const e2ok = display === "milk bread" && JSON.stringify(acc) === `["milk"]`;
-
-  // Event 3: resultIndex=0 again, same results[0] final, results[1] updated
-  display = processSpeechResults([
-    { isFinal: true, transcript: "milk" },
-    { isFinal: false, transcript: "milk bread paneer" },
-  ], acc);
-  const e3ok = display === "milk bread paneer" && JSON.stringify(acc) === `["milk"]`;
-
-  if (e1ok && e2ok && e3ok) { pass += 1; console.log(`✓ speech-android-lifecycle`); }
-  else {
-    fail += 1;
-    console.log(`✗ speech-android-lifecycle`);
-    if (!e1ok) console.log(`   Event1: display="${display}" acc=${JSON.stringify(acc)}`);
-    if (!e2ok) console.log(`   Event2: display="${display}" acc=${JSON.stringify(acc)}`);
-    if (!e3ok) console.log(`   Event3: display="${display}" acc=${JSON.stringify(acc)}`);
-  }
+  const cache = {};
+  processSpeechResults([
+    { isFinal: false, transcript: "milk milk milk bread" },
+    { isFinal: false, transcript: "milk bread milk bread paneer" },
+  ], 0, acc, cache);
+  // Next event: correct final result at index 0 only → cache[1] is now stale and outside [0,1)
+  processSpeechResults([{ isFinal: true, transcript: "milk bread paneer" }], 0, acc, cache);
+  const ok = JSON.stringify(cache) === "{}" && JSON.stringify(acc) === `["milk bread paneer"]`;
+  if (ok) { pass += 1; console.log(`✓ speech-android-cache-cleanup`); }
+  else { fail += 1; console.log(`✗ speech-android-cache-cleanup: cache=${JSON.stringify(cache)} acc=${JSON.stringify(acc)}`); }
 }
 
-// Verify that finals accumulator was mutated correctly for speech-004
-const acc004 = [];
-processSpeechResults([
-  { isFinal: true, transcript: "milk" },
-  { isFinal: false, transcript: "milk bread" },
-  { isFinal: false, transcript: "milk bread paneer" },
-], acc004);
-if (JSON.stringify(acc004) !== JSON.stringify(["milk"])) {
-  fail += 1;
-  console.log(`✗ speech-004-accumulator: got ${JSON.stringify(acc004)} expected ["milk"]`);
-} else {
-  pass += 1;
-  console.log(`✓ speech-004-accumulator`);
+// Safari: first word interim, then finalize + add new word (resultIndex resets to 0)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  // Event 1: resultIndex=0, first word interim
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk") ok = false;
+
+  // Event 2: resultIndex=0 (because results[0] changed to final), results[0] final + results[1] new interim
+  d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "bread" },
+  ], 0, acc, cache);
+  if (d !== "milk bread" || JSON.stringify(acc) !== `["milk"]`) ok = false;
+
+  // Event 3: resultIndex=0 (because results[0] re-sent), results[1] updated
+  d = processSpeechResults([
+    { isFinal: true, transcript: "milk" },
+    { isFinal: false, transcript: "paneer" },
+  ], 0, acc, cache);
+  if (d !== "milk paneer" || JSON.stringify(acc) !== `["milk"]`) ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-safari-finalize-continue`); }
+  else { fail += 1; console.log(`✗ speech-safari-finalize-continue`); }
+}
+
+// Safari: incremental indices (truly new words only, no finalization)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: false, transcript: "milk" }], 0, acc, cache);
+  if (d !== "milk") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "bread" }], 1, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([{ isFinal: false, transcript: "paneer" }], 2, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-safari-incremental`); }
+  else { fail += 1; console.log(`✗ speech-safari-incremental`); }
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

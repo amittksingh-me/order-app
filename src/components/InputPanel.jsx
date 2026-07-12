@@ -8,6 +8,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
   const silenceTimerRef = useRef(null);
   const transcriptAccumRef = useRef([]);
   const preRecordingTextRef = useRef(null);
+  const interimCacheRef = useRef({});
   const textareaRef = useRef(null);
 
   const handleClear = () => {
@@ -41,7 +42,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
           transcript: event.results[i][0].transcript,
         });
       }
-      const display = processSpeechResults(newResults, transcriptAccumRef.current);
+      const display = processSpeechResults(newResults, event.resultIndex, transcriptAccumRef.current, interimCacheRef.current);
       const pre = preRecordingTextRef.current;
       onChangeRef.current(pre ? pre + "\n" + display : display);
 
@@ -59,6 +60,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
         clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = null;
       }
+      interimCacheRef.current = {};
       const acc = transcriptAccumRef.current;
       transcriptAccumRef.current = [];
       const pre = preRecordingTextRef.current;

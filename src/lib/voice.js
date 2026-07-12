@@ -53,26 +53,49 @@ export function parseTranscript(transcript, builtin, userMemory) {
 
 /**
  * Process new speech recognition results and compute the live display string.
+ * Uses a cross-event interimCache keyed by result index, with platform detection:
+ *   - resultIndex reset to 0 → Android → clear stale cache before storing
+ *   - multiple non-finals in one event → Android alternative hypotheses → keep only last
+ *   - resultIndex increments → Safari → cache accumulates across events
  * 
  * @param {Array<{isFinal:boolean, transcript:string}>} newResults - Results from event.resultIndex onward
+ * @param {number} resultIndex - The event.resultIndex value
  * @param {string[]} finalsAccum - Mutable accumulator of finalized transcripts (mutated in-place)
+ * @param {Object} interimCache - Mutable cache keyed by result index (mutated in-place)
  * @returns {string} The full display string (finals + live suffix)
  */
-export function processSpeechResults(newResults, finalsAccum) {
-  for (const r of newResults) {
-    if (r.isFinal && r.transcript !== finalsAccum.at(-1)) {
-      finalsAccum.push(r.transcript);
+export function processSpeechResults(newResults, resultIndex, finalsAccum, interimCache) {
+  for (let i = 0; i < newResults.length; i++) {
+    const idx = resultIndex + i;
+    const r = newResults[i];
+    if (r.isFinal) {
+      if (r.transcript !== finalsAccum.at(-1)) {
+        finalsAccum.push(r.transcript);
+      }
+      delete interimCache[idx];
+    } else {
+      interimCache[idx] = r.transcript;
     }
   }
 
-  let liveSuffix = "";
-  for (let i = newResults.length - 1; i >= 0; i--) {
-    if (!newResults[i].isFinal) {
-      liveSuffix = newResults[i].transcript;
-      break;
+  if (resultIndex === 0) {
+    for (const k of Object.keys(interimCache)) {
+      if (+k >= resultIndex + newResults.length) delete interimCache[k];
     }
   }
 
+  const indices = Object.keys(interimCache).sort((a, b) => +a - +b);
+  const distinct = [];
+  for (const idx of indices) {
+    const t = interimCache[idx];
+    if (distinct.length && t.startsWith(distinct.at(-1))) {
+      distinct[distinct.length - 1] = t;
+    } else {
+      distinct.push(t);
+    }
+  }
+
+  let liveSuffix = distinct.join(" ");
   const finals = finalsAccum.join(" ");
   const lastFinal = finalsAccum.at(-1) || "";
 

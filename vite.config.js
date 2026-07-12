@@ -7,6 +7,7 @@ export default defineConfig({
   // Relative base so the built app works whether served from a domain root
   // or a GitHub Pages subpath (https://user.github.io/repo/).
   base: './',
+  define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version) },
   plugins: [
     react(),
     VitePWA({

@@ -317,7 +317,7 @@ export default function App() {
 
         />
       )}
-      <p className="foot-hint">Type, prep, paste into BigBasket</p>
+      <p className="foot-hint">Type, prep, paste into BigBasket  <span className="version-badge">{typeof __APP_VERSION__ !== "undefined" ? `v${__APP_VERSION__}` : ""}</span></p>
     </div>
   );
 }
