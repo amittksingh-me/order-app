@@ -533,5 +533,36 @@ for (const tc of speechCases) {
   else { fail += 1; console.log(`✗ speech-ios-index-jumps: display="${d}"`); }
 }
 
+// Android: cumulative finals at incrementing resultIndex (reproducing real Android events)
+{
+  const acc = [];
+  const cache = {};
+  let ok = true;
+
+  let d = processSpeechResults([{ isFinal: true, transcript: "" }], 0, acc, cache);
+  if (d !== "") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk" }], 1, acc, cache);
+  if (d !== "milk") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk" }], 2, acc, cache);
+  if (d !== "milk") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk bread" }], 3, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk bread" }], 4, acc, cache);
+  if (d !== "milk bread") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk bread paneer" }], 5, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  d = processSpeechResults([{ isFinal: true, transcript: "milk bread paneer" }], 6, acc, cache);
+  if (d !== "milk bread paneer") ok = false;
+
+  if (ok) { pass += 1; console.log(`✓ speech-android-cumulative-finals`); }
+  else { fail += 1; console.log(`✗ speech-android-cumulative-finals: display="${d}" acc=${JSON.stringify(acc)}`); }
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

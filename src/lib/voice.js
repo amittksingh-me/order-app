@@ -72,7 +72,10 @@ export function processSpeechResults(newResults, resultIndex, finalsAccum, inter
     const idx = resultIndex + i;
     const r = newResults[i];
     if (r.isFinal) {
-      if (r.transcript !== finalsAccum.at(-1)) {
+      const lastFinal = finalsAccum.at(-1);
+      if (lastFinal !== undefined && r.transcript.startsWith(lastFinal)) {
+        finalsAccum[finalsAccum.length - 1] = r.transcript;
+      } else if (r.transcript !== lastFinal) {
         finalsAccum.push(r.transcript);
       }
       delete interimCache[idx];
