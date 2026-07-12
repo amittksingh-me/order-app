@@ -29,7 +29,7 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
 
     const recog = new SpeechRecognition();
     recog.continuous = true;
-    recog.interimResults = true;
+    recog.interimResults = false;
     recog.lang = "en-IN";
 
     recog.onresult = (event) => {
@@ -40,19 +40,14 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
           currentFinal += (currentFinal ? " " : "") + result[0].transcript;
         }
       }
-      // Only the last result matters for interim (each result is cumulative)
-      const last = event.results[event.results.length - 1];
-      const interim = last.isFinal ? "" : last[0].transcript;
 
       if (currentFinal) {
         transcriptAccumRef.current.push(currentFinal);
       }
 
-      // Push live transcript into the textarea via parent state
       const finals = transcriptAccumRef.current.join(" ");
-      const live = finals + (interim ? " " + interim : "");
       const pre = preRecordingTextRef.current;
-      onChangeRef.current(pre ? pre + "\n" + live : live);
+      onChangeRef.current(pre ? pre + "\n" + finals : finals);
 
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = setTimeout(() => {
