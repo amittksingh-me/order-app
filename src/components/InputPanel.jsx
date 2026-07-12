@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { processSpeechResults } from "../lib/voice.js";
 
 export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClear }) {
   const [listening, setListening] = useState(false);
@@ -33,34 +34,14 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
     recog.lang = "en-IN";
 
     recog.onresult = (event) => {
+      const newResults = [];
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          transcriptAccumRef.current.push(event.results[i][0].transcript);
-        }
+        newResults.push({
+          isFinal: event.results[i].isFinal,
+          transcript: event.results[i][0].transcript,
+        });
       }
-
-      const interims = [];
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) continue;
-        const t = event.results[i][0].transcript;
-        if (interims.length && t.startsWith(interims.at(-1))) {
-          interims[interims.length - 1] = t;
-        } else {
-          interims.push(t);
-        }
-      }
-
-      let liveSuffix = interims.join(" ");
-      const finals = transcriptAccumRef.current.join(" ");
-      const lastFinal = transcriptAccumRef.current.at(-1) || "";
-
-      if (liveSuffix && finals.includes(liveSuffix)) {
-        liveSuffix = "";
-      } else if (liveSuffix && lastFinal && liveSuffix.startsWith(lastFinal)) {
-        liveSuffix = liveSuffix.slice(lastFinal.length).trim();
-      }
-
-      const display = finals + (liveSuffix ? " " + liveSuffix : "");
+      const display = processSpeechResults(newResults, transcriptAccumRef.current);
       const pre = preRecordingTextRef.current;
       onChangeRef.current(pre ? pre + "\n" + display : display);
 

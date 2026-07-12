@@ -1,4 +1,4 @@
-// Voice input parsing: greedy left-to-right matching against the product DB.
+// Voice input parsing and interim result processing for live speech preview.
 // Multi-word phrases that exist in the database are kept as single lines;
 // unknown words fall through as individual lines.
 
@@ -49,4 +49,40 @@ export function parseTranscript(transcript, builtin, userMemory) {
   }
 
   return result;
+}
+
+/**
+ * Process new speech recognition results and compute the live display string.
+ * 
+ * @param {Array<{isFinal:boolean, transcript:string}>} newResults - Results from event.resultIndex onward
+ * @param {string[]} finalsAccum - Mutable accumulator of finalized transcripts (mutated in-place)
+ * @returns {string} The full display string (finals + live suffix)
+ */
+export function processSpeechResults(newResults, finalsAccum) {
+  for (const r of newResults) {
+    if (r.isFinal) finalsAccum.push(r.transcript);
+  }
+
+  const interims = [];
+  for (const r of newResults) {
+    if (r.isFinal) continue;
+    const t = r.transcript;
+    if (interims.length && t.startsWith(interims.at(-1))) {
+      interims[interims.length - 1] = t;
+    } else {
+      interims.push(t);
+    }
+  }
+
+  let liveSuffix = interims.join(" ");
+  const finals = finalsAccum.join(" ");
+  const lastFinal = finalsAccum.at(-1) || "";
+
+  if (liveSuffix && finals.includes(liveSuffix)) {
+    liveSuffix = "";
+  } else if (liveSuffix && lastFinal && liveSuffix.startsWith(lastFinal)) {
+    liveSuffix = liveSuffix.slice(lastFinal.length).trim();
+  }
+
+  return finals + (liveSuffix ? (finals ? " " : "") + liveSuffix : "");
 }

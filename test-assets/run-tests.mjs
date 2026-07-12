@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { enrichItems } from "../src/lib/enrich.js";
 import { formatShoppingList } from "../src/lib/format.js";
-import { parseTranscript } from "../src/lib/voice.js";
+import { parseTranscript, processSpeechResults } from "../src/lib/voice.js";
 import products from "../src/data/products.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -128,6 +128,92 @@ for (const tc of voiceCases) {
     console.log(`✗ ${tc.name}`);
     errors.forEach((e) => console.log(`   ${e}`));
   }
+}
+
+// --- processSpeechResults (interim result) tests ---
+const speechCases = [
+  {
+    name: "speech-001",
+    desc: "Safari: paneer arriving after milk bread paneer finalized",
+    results: [{ isFinal: false, transcript: "paneer" }],
+    finals: ["milk bread paneer"],
+    expect: "milk bread paneer",
+  },
+  {
+    name: "speech-002",
+    desc: "Android: cumulative batch [milk, milk bread, milk bread paneer]",
+    results: [
+      { isFinal: false, transcript: "milk" },
+      { isFinal: false, transcript: "milk bread" },
+      { isFinal: false, transcript: "milk bread paneer" },
+    ],
+    finals: ["milk bread"],
+    expect: "milk bread paneer",
+  },
+  {
+    name: "speech-003",
+    desc: "Safari: new words progressively [milk] then [bread] then [paneer]",
+    results: [{ isFinal: false, transcript: "paneer" }],
+    finals: ["milk bread"],
+    expect: "milk bread paneer",
+  },
+  {
+    name: "speech-004",
+    desc: "Android: single event mixed final+interim",
+    results: [
+      { isFinal: true, transcript: "milk" },
+      { isFinal: false, transcript: "milk bread" },
+      { isFinal: false, transcript: "milk bread paneer" },
+    ],
+    finals: [],
+    expect: "milk bread paneer",
+  },
+  {
+    name: "speech-005",
+    desc: "Both: first word, nothing finalized",
+    results: [{ isFinal: false, transcript: "milk" }],
+    finals: [],
+    expect: "milk",
+  },
+  {
+    name: "speech-006",
+    desc: "Both: mid-speech, word not yet finalized",
+    results: [{ isFinal: false, transcript: "bread" }],
+    finals: ["milk"],
+    expect: "milk bread",
+  },
+];
+
+for (const tc of speechCases) {
+  const acc = [...tc.finals];
+  const got = processSpeechResults(tc.results, acc);
+  const errors = [];
+  if (got !== tc.expect) {
+    errors.push(`display: got "${got}" expected "${tc.expect}"`);
+  }
+  if (errors.length === 0) {
+    pass += 1;
+    console.log(`✓ ${tc.name}`);
+  } else {
+    fail += 1;
+    console.log(`✗ ${tc.name} (${tc.desc})`);
+    errors.forEach((e) => console.log(`   ${e}`));
+  }
+}
+
+// Verify that finals accumulator was mutated correctly for speech-004
+const acc004 = [];
+processSpeechResults([
+  { isFinal: true, transcript: "milk" },
+  { isFinal: false, transcript: "milk bread" },
+  { isFinal: false, transcript: "milk bread paneer" },
+], acc004);
+if (JSON.stringify(acc004) !== JSON.stringify(["milk"])) {
+  fail += 1;
+  console.log(`✗ speech-004-accumulator: got ${JSON.stringify(acc004)} expected ["milk"]`);
+} else {
+  pass += 1;
+  console.log(`✓ speech-004-accumulator`);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
