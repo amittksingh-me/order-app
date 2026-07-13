@@ -61,6 +61,14 @@ export default function App() {
   }
 
   useEffect(() => {
+    // Version-triggered memory wipe: old key-format ghosts are cleaned on
+    // every version bump so the next syncSheet repopulates with fresh keys.
+    const lastVersion = localStorage.getItem("baskit-version");
+    if (lastVersion !== __APP_VERSION__) {
+      localStorage.setItem("baskit-version", __APP_VERSION__);
+      clearMemory().catch(() => {});
+    }
+
     // Restore draft immediately from localStorage (saved synchronously on
     // every keystroke — survives app kill on mobile).
     try {

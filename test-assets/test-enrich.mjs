@@ -162,5 +162,40 @@ export function run() {
     );
   }
 
+  // Unknown item passes through with original text preserved
+  {
+    const lines = ["random thing 123"];
+    const items = enrichItems(lines, products, csvMemory);
+    ok(items.length === 1, "unknown-preserve: one item");
+    ok(items[0].input === "random thing 123", "unknown-preserve: input preserved");
+    ok(items[0].matched === false, "unknown-preserve: unmatched");
+  }
+
+  // Brand-word lines are filtered out as noise (words that don't prefix
+  // any CSV key like 'popular', 'royal', 'mist')
+  {
+    const lines = ["popular", "royal"];
+    const items = enrichItems(lines, products, csvMemory);
+    ok(items.length === 0, "brand-noise: filtered out");
+  }
+
+  // Unit-only lines are filtered out (empty after normalization)
+  {
+    const lines = ["1 kg", "500 ml"];
+    const items = enrichItems(lines, products, csvMemory);
+    ok(items.length === 0, "unit-only: filtered out");
+  }
+
+  // Mixed known+unknown preserves both
+  {
+    const lines = ["milk", "xyzzy"];
+    const items = enrichItems(lines, products, csvMemory);
+    ok(items.length === 2, "mixed-known-unknown: 2 items");
+    const milkItem = items.find((i) => i.input === "milk");
+    const xyzzyItem = items.find((i) => i.input === "xyzzy");
+    ok(milkItem && milkItem.matched, "mixed-known-unknown: milk matched");
+    ok(xyzzyItem && !xyzzyItem.matched, "mixed-known-unknown: xyzzy unmatched");
+  }
+
   return { pass, fail };
 }

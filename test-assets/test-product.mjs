@@ -24,5 +24,9 @@ export function run() {
   const merged2 = mergeDatabase(builtin, memory2);
   ok(merged2["custom"].product === "Custom", "memory-only key added");
 
+  const emptyMerged = mergeDatabase({}, memory);
+  ok(emptyMerged["milk"].product === "My Milk", "merge with empty builtin includes user key");
+  ok(emptyMerged["milk"].keywords.length > 0, "merge with empty builtin preserves keywords");
+
   return { pass, fail };
 }

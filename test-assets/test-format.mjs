@@ -8,6 +8,8 @@ export function run() {
   ok(formatShoppingList([]) === "", "empty list");
   ok(formatShoppingList([{ preferredProduct: "Milk" }, { input: "unknown item", preferredProduct: "" }]) === "Milk, unknown item", "empty preferred falls back to input");
   ok(formatShoppingList([{ preferredProduct: "" }]) === "", "single empty filters out");
+  ok(formatShoppingList([{ preferredProduct: "Milk" }, { preferredProduct: "Bread" }, { preferredProduct: "Eggs" }]) === "Milk, Bread, Eggs", "three items");
+  ok(formatShoppingList([{ preferredProduct: "" }, { preferredProduct: "Milk" }, {}]) === "Milk", "filters empty and undefined entries");
 
   return { pass, fail };
 }

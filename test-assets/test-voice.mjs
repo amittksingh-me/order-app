@@ -47,6 +47,9 @@ export function run() {
   check("a b c d e", [], "only filler and single char");
   check("hello", ["hello"], "single unmatched word");
   check("bread butter", ["bread", "butter"], "two matched single words");
+  check("mustard oil", ["mustard oil"], "multi-word known in user memory via keywords");
+  check("milk and oil", ["milk", "oil"], "filler removed between two single-word matches");
+  check("milk bread paneer butter", ["milk", "bread", "paneer", "butter"], "four words no fillers");
 
   return { pass, fail };
 }

@@ -33,7 +33,7 @@ export function toSingular(normalized) {
   return normalized.split(/\s+/).map(singularizeWord).join(" ");
 }
 
-const UNIT_PATTERN = /\d+(\.\d+|\s+\d+(\.\d+)?)?\s*(g|kg|l|ml|m|cm|pcs|pc|pack|oz|lb|pound)\b/g;
+const UNIT_PATTERN = /\d+(\.\d+|\s+\d+(\.\d+)?)?\s*(g|kg|l|ml|pcs|pc|pack|oz|lb|pound)\b/g;
 
 function stripUnits(normalized) {
   return normalized.replace(UNIT_PATTERN, "").replace(/\s+/g, " ").trim();

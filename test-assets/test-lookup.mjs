@@ -24,5 +24,12 @@ export function run() {
   ok(prefixMatchUserMemory("milkr", { "milk powder": { product: "Milk Powder" } }) === null, "prefix match not found");
   ok(prefixMatchUserMemory("", { "milk": { product: "Milk" } }) === null, "prefix match empty key");
 
+  ok(lookupProduct("ric", products, {}).matched, "fuzzy match 'ric' to 'rice'");
+
+  const multiMem = { "egg white": { product: "Egg White" }, "egg powder": { product: "Egg Powder" } };
+  ok(prefixMatchUserMemory("egg", multiMem) !== null, "multi-prefix match 'egg' finds both");
+
+  ok(prefixMatchUserMemory("milk powder", { "milk powder full cream": { product: "Milk Powder" } }) !== null, "multi-word prefix match");
+
   return { pass, fail };
 }

@@ -58,5 +58,13 @@ export function run() {
   // ing + unit combo
   ok(normalizeItem("cleaning liquid 500 ml") === "clean liquid", "ing + unit combo");
 
+  // Additional edge cases
+  ok(normalizeItem("cheese 8 oz") === "cheese", "strip oz");
+  ok(normalizeItem("meat 2 pound") === "meat", "strip pound");
+  ok(normalizeItem("butter 1 pack") === "butter", "strip pack");
+  ok(normalizeItem("1 kg") === "", "strip unit-only input results in empty");
+  ok(toSingular("us") === "us", "preserve 'us' (length <= 3 unchanged)");
+  ok(normalizeItem("") === "", "empty input stays empty");
+
   return { pass, fail };
 }

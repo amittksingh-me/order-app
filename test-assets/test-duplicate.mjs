@@ -20,5 +20,11 @@ export function run() {
   r = sort(detectDuplicates(["milk", "milk", "milk"]));
   ok(r.length === 1 && r[0].count === 3, "three same merge");
 
+  r = sort(detectDuplicates(["milk", "Milk 1 L"]));
+  ok(r.length === 1 && r[0].count === 2, "normalize-equivalent merge");
+
+  r = sort(detectDuplicates(["eggs", "egg"]));
+  ok(r.length === 1 && r[0].count === 2, "plural vs singular merge");
+
   return { pass, fail };
 }

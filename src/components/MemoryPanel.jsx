@@ -19,7 +19,7 @@ export default function MemoryPanel({
   syncUrl,
   onUrlChange,
 }) {
-  const [view, setView] = useState("builtin"); // builtin | learned
+  const [view, setView] = useState("learned"); // builtin | learned
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(null); // { key, isNew }
