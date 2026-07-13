@@ -1,6 +1,18 @@
 {
-  "normalized": [],
-  "matched": {},
-  "source": {},
-  "finalList": ""
+  "normalized": [
+    "kg",
+    "g",
+    "pc"
+  ],
+  "matched": {
+    "kg": false,
+    "g": false,
+    "pc": false
+  },
+  "source": {
+    "kg": "unknown",
+    "g": "unknown",
+    "pc": "unknown"
+  },
+  "finalList": "kg, g, pc"
 }

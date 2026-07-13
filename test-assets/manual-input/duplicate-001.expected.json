@@ -1,15 +1,15 @@
 {
   "normalized": [
-    "fresho onion 1 kg",
-    "fresho potato 1 kg"
+    "fresho onion",
+    "fresho potato"
   ],
   "matched": {
-    "fresho onion 1 kg": true,
-    "fresho potato 1 kg": true
+    "fresho onion": true,
+    "fresho potato": true
   },
   "source": {
-    "fresho onion 1 kg": "builtin",
-    "fresho potato 1 kg": "builtin"
+    "fresho onion": "builtin",
+    "fresho potato": "builtin"
   },
   "finalList": "fresho Onion 1 kg, fresho Potato 1 kg"
 }

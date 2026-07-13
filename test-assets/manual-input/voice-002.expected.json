@@ -1,18 +1,18 @@
 {
   "normalized": [
-    "fresho farm eggs 6 pc",
-    "milky mist paneer 200 g",
-    "nandini shubham milk 500 ml"
+    "fresho farm egg",
+    "milky mist paneer",
+    "nandini shubham milk"
   ],
   "matched": {
-    "fresho farm eggs 6 pc": true,
-    "milky mist paneer 200 g": true,
-    "nandini shubham milk 500 ml": true
+    "fresho farm egg": true,
+    "milky mist paneer": true,
+    "nandini shubham milk": true
   },
   "source": {
-    "fresho farm eggs 6 pc": "user-memory",
-    "milky mist paneer 200 g": "builtin",
-    "nandini shubham milk 500 ml": "user-memory"
+    "fresho farm egg": "user-memory",
+    "milky mist paneer": "builtin",
+    "nandini shubham milk": "user-memory"
   },
   "finalList": "Fresho Farm Eggs 6 pcs, Milky Mist Paneer 200 g, Nandini Shubham Milk 500 ml"
 }

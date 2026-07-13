@@ -3,10 +3,34 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { enrichItems, reLookup } from "../src/lib/enrich.js";
 import { formatShoppingList } from "../src/lib/format.js";
+import { normalizeItem } from "../src/lib/normalize.js";
+import { parseCsv } from "../src/lib/sheets.js";
 import products from "../src/data/products.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dir = join(__dirname, "manual-input");
+
+function buildMemoryFromCsv() {
+  const text = readFileSync(join(__dirname, "csv", "products.csv"), "utf8");
+  const rows = parseCsv(text);
+  const mem = {};
+  for (const row of rows) {
+    const key = normalizeItem(`${row.brand || ""} ${row.product} ${row.size || ""}`);
+    if (!key) continue;
+    const keywords = row.keywords
+      ? row.keywords.split(";").map((k) => k.trim()).filter(Boolean)
+      : [];
+    mem[key] = {
+      product: row.product,
+      brand: row.brand || "",
+      size: row.size || "",
+      defaultQty: row.defaultQty || 1,
+      category: row.category || "",
+      keywords,
+    };
+  }
+  return mem;
+}
 
 export function run() {
   let pass = 0, fail = 0;
@@ -61,6 +85,82 @@ export function run() {
   r = reLookup({ ...unit, preferredProduct: "Bread Slice", input: "xyzzy" }, products, {});
   ok(r.matched, "reLookup matches via preferredProduct");
   ok(r.product === "Breakfast Slice Bread", "reLookup uses preferredProduct");
+
+  // --- Inline paste-cycle tests using CSV-built memory ---
+  const csvMemory = buildMemoryFromCsv();
+
+  // Grocery paste test: single-keyword items
+  {
+    const lines = ["milk", "eggs", "butter", "bread"];
+    const items = enrichItems(lines, products, csvMemory);
+    const normalized = items.map((i) => i.normalized);
+    const matched = {};
+    const source = {};
+    items.forEach((i) => { matched[i.normalized] = i.matched; source[i.normalized] = i.source; });
+    const finalList = formatShoppingList(items);
+
+    const expectedNorm = [
+      "amul pasteurised butter tub",
+      "britannia breakfast slice bread",
+      "fresho farm egg",
+      "nandini shubham milk",
+    ];
+    ok(JSON.stringify(normalized) === JSON.stringify(expectedNorm), "grocery-paste: normalized");
+    ok(items.every((i) => i.matched === true), "grocery-paste: all matched");
+    ok(items.every((i) => i.source === "user-memory"), "grocery-paste: all user-memory source");
+    const expectedFinal = "Amul Pasteurised Butter Tub 200 g, Britannia Breakfast Slice Bread 450 g, Fresho Farm Eggs 6 pcs, Nandini Shubham Milk 500 ml";
+    ok(finalList === expectedFinal, "grocery-paste: finalList");
+  }
+
+  // Cleaning paste test: full product names from Cleaning & Household category
+  {
+    const lines = [
+      "Lizol Disinfectant Surface Floor Cleaner Liquid Citrus 5 L",
+      "Scotch Brite Premium Kitchen Towel 3 pcs",
+      "Colgate Kids Toothbrush 1 pc",
+    ];
+    const items = enrichItems(lines, products, csvMemory);
+    const normalized = items.map((i) => i.normalized);
+    const matched = {};
+    const source = {};
+    items.forEach((i) => { matched[i.normalized] = i.matched; source[i.normalized] = i.source; });
+    const finalList = formatShoppingList(items);
+
+    const expectedNorm = [
+      "colgate kid toothbrush",
+      "lizol disinfectant surface floor cleaner liquid citrus",
+      "scotch brite premium kitchen towel",
+    ];
+    ok(JSON.stringify(normalized) === JSON.stringify(expectedNorm), "cleaning-paste: normalized");
+    ok(items.every((i) => i.matched === true), "cleaning-paste: all matched");
+    const expectedFinal = "Colgate Kids Toothbrush 1 pc, Lizol Disinfectant Surface Floor Cleaner Liquid Citrus 5 L, Scotch Brite Premium Kitchen Towel 3 pcs";
+    ok(finalList === expectedFinal, "cleaning-paste: finalList");
+  }
+
+  // Full paste-cycle: re-pasting cycle 1 output produces the same result
+  {
+    const c1Lines = [
+      "Doodh Anda Paneer Noodles Maggi masala pasta Jeera Kali Mirch long Butter bread Dosa batter",
+      "Haldi Dhaniya powder mills powder Cornflour Maida Aata Chawal Tod Daal bonvita",
+    ];
+    const c2Text = "mills, cornflour, tod, bonvita, Aashirvaad Whole Wheat Atta 5 kg, Amul Pasteurised Butter Tub 200 g, bb Popular Black Pepper Whole 50 g, BB Royal Cumin Jeera Whole 200 g, Borges Durum Wheat Macaroni Pasta 350 g, Britannia Breakfast Slice Bread 450 g, Ching's Secret Veg Hakka Noodles 140 g, Everest Coriander Powder 200 g, Everest Turmeric Powder 200 g, Fresho Farm Eggs 6 pcs, iD Idly Dosa Batter 1 kg, India Gate Gold Standard Classic Basmati Rice 5 kg, Maggi Masala Ae Magic Mixed Masala Powder 72 g, Milky Mist Paneer 200 g, Nandini Shubham Milk 500 ml, Organic Tattva Maida 500 g, Tata Sampann Clove Whole 50 g, Tata Sampann Unpolished Toor Dal 2 kg";
+
+    const c1 = enrichItems(c1Lines, products, csvMemory);
+    const c2 = enrichItems(c2Text.split(", "), products, csvMemory);
+
+    ok(
+      JSON.stringify(c1.map((i) => i.normalized)) === JSON.stringify(c2.map((i) => i.normalized)),
+      "paste-cycle-roundtrip: normalized match"
+    );
+    ok(formatShoppingList(c1) === formatShoppingList(c2), "paste-cycle-roundtrip: finalList match");
+    ok(c1.length === 22, "paste-cycle-roundtrip: 22 items");
+    ok(c1.filter((i) => i.matched).length === 18, "paste-cycle-roundtrip: 18 matched");
+    const unknownInputs = c1.filter((i) => !i.matched).map((i) => i.input);
+    ok(
+      ["mills", "cornflour", "tod", "bonvita"].every((u) => unknownInputs.includes(u)),
+      "paste-cycle-roundtrip: 4 known unknowns"
+    );
+  }
 
   return { pass, fail };
 }

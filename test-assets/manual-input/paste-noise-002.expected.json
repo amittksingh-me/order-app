@@ -1,24 +1,30 @@
 {
   "normalized": [
-    "aashirvaad whole wheat atta 5 kg",
-    "bb popular black pepper whole 50 g",
-    "britannia breakfast slice bread 450 g",
-    "id idly dosa batter 1 kg",
-    "milky mist paneer 200 g"
+    "kg",
+    "24 mantra organic organic kabuli chana",
+    "aashirvaad whole wheat atta",
+    "bb popular black pepper whole",
+    "britannia breakfast slice bread",
+    "id idly dosa batter",
+    "milky mist paneer"
   ],
   "matched": {
-    "aashirvaad whole wheat atta 5 kg": true,
-    "bb popular black pepper whole 50 g": true,
-    "britannia breakfast slice bread 450 g": true,
-    "id idly dosa batter 1 kg": true,
-    "milky mist paneer 200 g": true
+    "kg": false,
+    "24 mantra organic organic kabuli chana": true,
+    "aashirvaad whole wheat atta": true,
+    "bb popular black pepper whole": true,
+    "britannia breakfast slice bread": true,
+    "id idly dosa batter": true,
+    "milky mist paneer": true
   },
   "source": {
-    "aashirvaad whole wheat atta 5 kg": "builtin",
-    "bb popular black pepper whole 50 g": "builtin",
-    "britannia breakfast slice bread 450 g": "builtin",
-    "id idly dosa batter 1 kg": "builtin",
-    "milky mist paneer 200 g": "builtin"
+    "kg": "unknown",
+    "24 mantra organic organic kabuli chana": "builtin",
+    "aashirvaad whole wheat atta": "builtin",
+    "bb popular black pepper whole": "builtin",
+    "britannia breakfast slice bread": "builtin",
+    "id idly dosa batter": "builtin",
+    "milky mist paneer": "builtin"
   },
-  "finalList": "Aashirvaad Whole Wheat Atta 5 kg, bb Popular Black Pepper Whole 50 g, Britannia Breakfast Slice Bread 450 g, iD Idly Dosa Batter 1 kg, Milky Mist Paneer 200 g"
+  "finalList": "kg, 24 Mantra Organic Organic Kabuli Chana 500 g, Aashirvaad Whole Wheat Atta 5 kg, bb Popular Black Pepper Whole 50 g, Britannia Breakfast Slice Bread 450 g, iD Idly Dosa Batter 1 kg, Milky Mist Paneer 200 g"
 }

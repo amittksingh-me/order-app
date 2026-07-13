@@ -18,8 +18,19 @@ function nextId() {
 function expandLines(lines, builtin, userMemory) {
   const brands = collectBrands(builtin, userMemory);
   const sizeWords = collectSizeWords(builtin, userMemory);
-  const out = [];
+
+  // Comma-split pre-pass: "chips, bread, milk" -> ["chips", "bread", "milk"]
+  const splitLines = [];
   for (const line of lines) {
+    if (line.includes(", ")) {
+      splitLines.push(...line.split(", ").map((s) => s.trim()).filter(Boolean));
+    } else {
+      splitLines.push(line);
+    }
+  }
+
+  const out = [];
+  for (const line of splitLines) {
     const key = normalizeItem(line);
     if (!key) continue;
     if (lookupProduct(key, builtin, userMemory).matched) {
@@ -59,7 +70,7 @@ function expandLines(lines, builtin, userMemory) {
                 }
               }
               if (productKeys.size === 1) {
-                out.push(line);
+                out.push(...clean);
               } else {
                 out.push(...clean);
               }
@@ -154,7 +165,7 @@ export function enrichItems(lines, builtin, userMemory) {
     }
     const preferredProduct = look.matched
       ? buildDisplayName(look.product.brand, look.product.product, look.product.size)
-      : g.key;
+      : (g.originals[0] || g.key);
     const base = {
       id: nextId(),
       input: g.originals[0] || g.key,

@@ -42,5 +42,11 @@ export function run() {
   check("and the a", [], "only filler words");
   check("x", [], "single char filtered");
 
+  // Edge cases for parseTranscript
+  check("   ", [], "whitespace only");
+  check("a b c d e", [], "only filler and single char");
+  check("hello", ["hello"], "single unmatched word");
+  check("bread butter", ["bread", "butter"], "two matched single words");
+
   return { pass, fail };
 }

@@ -3,25 +3,25 @@
     "milk",
     "egg",
     "tata salt",
-    "aashirvaad whole wheat atta 5 kg",
-    "fresho onion 1 kg",
-    "fresho potato 1 kg"
+    "aashirvaad whole wheat atta",
+    "fresho onion",
+    "fresho potato"
   ],
   "matched": {
     "milk": false,
     "egg": false,
     "tata salt": false,
-    "aashirvaad whole wheat atta 5 kg": true,
-    "fresho onion 1 kg": true,
-    "fresho potato 1 kg": true
+    "aashirvaad whole wheat atta": true,
+    "fresho onion": true,
+    "fresho potato": true
   },
   "source": {
     "milk": "unknown",
     "egg": "unknown",
     "tata salt": "unknown",
-    "aashirvaad whole wheat atta 5 kg": "builtin",
-    "fresho onion 1 kg": "builtin",
-    "fresho potato 1 kg": "builtin"
+    "aashirvaad whole wheat atta": "builtin",
+    "fresho onion": "builtin",
+    "fresho potato": "builtin"
   },
-  "finalList": "milk, egg, tata salt, Aashirvaad Whole Wheat Atta 5 kg, fresho Onion 1 kg, fresho Potato 1 kg"
+  "finalList": "milk, eggs, tata salt, Aashirvaad Whole Wheat Atta 5 kg, fresho Onion 1 kg, fresho Potato 1 kg"
 }

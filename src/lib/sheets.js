@@ -94,7 +94,7 @@ export async function syncSheet(csvUrl) {
   let count = 0;
   for (const row of rows) {
     const key = normalizeItem(
-      `${row.brand || ""} ${row.product} ${row.size || ""} ${row.category || ""}`
+      `${row.brand || ""} ${row.product} ${row.size || ""}`
     );
     if (!key) continue;
     const keywords = row.keywords

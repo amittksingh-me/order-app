@@ -14,18 +14,29 @@ export function normalizeText(raw) {
 
 // Singular/plural handling: strip trailing plural markers so that
 // "tomatoes" and "tomato" resolve to the same base key.
+// Applied per-word; words ending in "us" are excluded from the s-rule
+// to avoid stripping valid singulars like "citrus".
+function singularizeWord(w) {
+  if (w.endsWith("ies") && w.length > 4) return w.slice(0, -3) + "y";
+  if (w.endsWith("ses") && w.length > 4) return w.slice(0, -2);
+  if (w.endsWith("s") && !w.endsWith("ss") && !w.endsWith("us") && w.length > 3) return w.slice(0, -1);
+  if (w.endsWith("ing") && w.length > 6) {
+    let root = w.slice(0, -3);
+    root = root.replace(/([b-df-hj-np-tv-z])\1$/, "$1");
+    return root;
+  }
+  return w;
+}
+
 export function toSingular(normalized) {
   if (!normalized) return normalized;
-  if (normalized.endsWith("ies") && normalized.length > 4) {
-    return normalized.slice(0, -3) + "y"; // tomatoes -> tomato
-  }
-  if (normalized.endsWith("ses") && normalized.length > 4) {
-    return normalized.slice(0, -2); // glasses -> glass
-  }
-  if (normalized.endsWith("s") && !normalized.endsWith("ss") && normalized.length > 3) {
-    return normalized.slice(0, -1); // eggs -> egg, breads -> bread
-  }
-  return normalized;
+  return normalized.split(/\s+/).map(singularizeWord).join(" ");
+}
+
+const UNIT_PATTERN = /\d+(\.\d+|\s+\d+(\.\d+)?)?\s*(g|kg|l|ml|m|cm|pcs|pc|pack|oz|lb|pound)\b/g;
+
+function stripUnits(normalized) {
+  return normalized.replace(UNIT_PATTERN, "").replace(/\s+/g, " ").trim();
 }
 
 // Common spelling corrections (lightweight, manually curated).
@@ -48,8 +59,9 @@ export function correctSpelling(normalized) {
 }
 
 // Full pipeline: returns the normalized search key used for lookup.
+// Units are stripped before singularization so "Eggs 6 pcs" -> "egg".
 export function normalizeItem(raw) {
   const trimmed = normalizeText(raw);
   if (!trimmed) return "";
-  return correctSpelling(trimmed);
+  return correctSpelling(stripUnits(trimmed));
 }

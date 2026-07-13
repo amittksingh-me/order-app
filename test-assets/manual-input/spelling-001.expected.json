@@ -1,21 +1,21 @@
 {
   "normalized": [
-    "britannia breakfast slice bread 450 g",
-    "fresho hybrid tomato 500 g",
-    "fresho onion 1 kg",
-    "fresho potato 1 kg"
+    "britannia breakfast slice bread",
+    "fresho hybrid tomato",
+    "fresho onion",
+    "fresho potato"
   ],
   "matched": {
-    "britannia breakfast slice bread 450 g": true,
-    "fresho hybrid tomato 500 g": true,
-    "fresho onion 1 kg": true,
-    "fresho potato 1 kg": true
+    "britannia breakfast slice bread": true,
+    "fresho hybrid tomato": true,
+    "fresho onion": true,
+    "fresho potato": true
   },
   "source": {
-    "britannia breakfast slice bread 450 g": "builtin",
-    "fresho hybrid tomato 500 g": "builtin",
-    "fresho onion 1 kg": "builtin",
-    "fresho potato 1 kg": "builtin"
+    "britannia breakfast slice bread": "builtin",
+    "fresho hybrid tomato": "builtin",
+    "fresho onion": "builtin",
+    "fresho potato": "builtin"
   },
   "finalList": "Britannia Breakfast Slice Bread 450 g, fresho Hybrid Tomato 500 g, fresho Onion 1 kg, fresho Potato 1 kg"
 }

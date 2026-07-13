@@ -18,8 +18,17 @@
 
 ## Normalisation — Sharp Edges
 - Crude singularisation (`ies`→`y`, `ses`→`s`, trailing `s`→`""`) is a footgun — `"milk"` doesn't end in `s` (safe), but `"milks"` would become `"milk"` (accidentally correct) while `"tomatoes"` → `"tomatoe"` (wrong).
+- Per‑word `s` rule is safer but still strips "citrus" → "citru". Fixed by excluding words ending in `"us"`.
+- `ing` stripping with a `>6` length guard blocks "string" (len 6), "spring" (len 6) — both nouns, not progressive verbs. Doubled‑consonant undoubling handles "running"→"run", "shopping"→"shop", "clubbing"→"club".
+- Unit stripping (`stripUnits`) must run before singularization (`correctSpelling`). "Eggs 6 pcs" → `stripUnits` → "eggs" → `toSingular` → "egg". If reversed: `toSingular` strips the trailing "s" from "pcs" (full‑string context) leaving "eggs 6 pc", then `stripUnits` removes "6 pc" → "eggs" — the middle word "eggs" kept its 's'.
 - Spelling fixes are a curated map, not AI. Every new misspelling needs a manual entry.
 - Levenshtein fuzzy matching with a dynamic threshold (`min(2, max(1, floor(candidateLen/4)))`) works well for short Indian-English product names.
+
+## Unmatched Items — Preserve Original Text
+- Unmatched items now use `g.originals[0]` (original input text) as their `preferredProduct` instead of the normalized key (`g.key`). This prevents "nights" from displaying as "night", "mills" as "mill", etc. The normalized key is still used for dedup internally.
+
+## Paste-Cycle Tests
+- The file‑based `paste-cycle-002.*` fixture (word‑by‑word re‑paste of cycle 1 output) was replaced by an inline CSV‑driven paste‑cycle‑roundtrip test that verifies cycle 1 (multi‑word lines) and cycle 2 (re‑paste of comma‑separated output) produce identical normalized, matched, source, and finalList. The CSV fixture (`test-assets/csv/products.csv`) provides 72 product rows for the inline tests.
 
 ## Test Organisation
 - Per-module `test-*.mjs` files let you run and debug one module in isolation.

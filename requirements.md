@@ -11,12 +11,12 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R1.1 | Convert a typed line into a normalized search key | ✅ | `normalizeItem()` — lower, strip diacritics, punctuation→space, singular/plural, spelling fixes |
+| R1.1 | Convert a typed line into a normalized search key | ✅ | `normalizeItem()` — lower, strip diacritics, punctuation→space, singular/plural, spelling fixes, stripUnits (removes `\d+unit` patterns), `ing` stripping with doubled‑consonant undoubling |
 | R1.2 | Detect duplicate items across lines and merge quantities | ✅ | `detectDuplicates()` — identical normalized keys are grouped, count accumulated |
 | R1.3 | Match a normalized key against user memory (IndexedDB) | ✅ | `lookupProduct()` — checks exact key match then keyword match on user entries |
 | R1.4 | Match a normalized key against the built-in product database | ✅ | `lookupProduct()` — checks exact key, keyword index, then Levenshtein fuzzy match |
 | R1.5 | Return structured enriched item objects | ✅ | Fields: `id`, `input`, `normalized`, `quantity`, `matched`, `source`, `fuzzy`, `product`, `preferredProduct`, `brand`, `size`, `alternatives`, `category`, `editable` |
-| R1.6 | Smart split unmatched lines into sub-phrases | ✅ | `expandLines()` — noise filter (brand/size/number removal), `compressToMatch()` using `buildDisplayName` for coverage check, then greedy left-to-right `parseTranscript()` on low‑coverage lines. Product‑keys heuristic: if all tokens map to same product → keep original line; different products → split into individual tokens. Then calls `prefixMatchUserMemory()` on each expanded line |
+| R1.6 | Smart split unmatched lines into sub-phrases | ✅ | `expandLines()` — comma‑split pre‑pass (`"chips, bread"` → two lines), noise filter (brand/size/number removal), `compressToMatch()` using `buildDisplayName` for coverage check, then greedy left-to-right `parseTranscript()` on low‑coverage lines. Product‑keys heuristic: all tokens map to same product → split into individual tokens for per‑item dedup. Then calls `prefixMatchUserMemory()` on each expanded line |
 | R1.7 | Re-run lookup for a single edited item | ✅ | `reLookup()` — normalizes the edited string and re-queries |
 | R1.8 | Unknown items are never silently dropped | ✅ | Pass through as unmatched, `source: "unknown"` |
 | R1.9 | Single sort: unmatched first, then brand → product → size | ✅ | `sortItems()` at end of `enrichItems` — review table and clipboard always match |
@@ -116,9 +116,9 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — orchestrator importing 11 per-module test files. 132 tests total: 14 normalize, 4 duplicate, 9 lookup, 18 enrich (12 file-based + 6 inline), 5 voice, 24 speech, 5 format, 5 product, 7 memory (exports), 6 draft (exports), 8 sheets (exports + parseCsv) |
-| R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑noise (attribute words), speech (iOS/Android/Safari), reLookup, mergeDatabase, format, module exports | ✅ | |
-| R7.3 | Every bug fix adds a regression test | ✅ | Pattern established — 132 tests across 11 per-module files, covering all platforms |
+| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — orchestrator importing 11 per-module test files. 174 tests total: 43 normalize, 4 duplicate, 9 lookup, 31 enrich (17 file-based + 14 inline), 10 voice, 24 speech, 5 format, 6 product, 7 memory (exports), 6 draft (exports), 8 sheets (exports + parseCsv) |
+| R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑cycle‑roundtrip (cycle 1 == cycle 2), paste‑noise (attribute words), speech (iOS/Android/Safari), reLookup, mergeDatabase, format, module exports | ✅ | |
+| R7.3 | Every bug fix adds a regression test | ✅ | Pattern established — 174 tests across 11 per-module files, covering all platforms |
 
 ---
 

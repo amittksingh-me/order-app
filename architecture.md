@@ -109,7 +109,7 @@ order-app/
 │       ├── memory-001.*
 │       ├── voice-001.* – voice-005.*
 │       ├── unknown-first-001.*
-│       ├── paste-cycle-001.* – paste-cycle-002.*
+│       ├── paste-cycle-001.*
 │       ├── paste-noise-001.* – paste-noise-004.*
 │       ├── dedup-sugar-chini.*
 │
@@ -208,9 +208,10 @@ User types/pastes voice text
 | Function | Purpose |
 |---|---|
 | `normalizeText(raw)` | Light clean: lowercase, NFKD, strip diacritics, punctuation→space, collapse whitespace |
-| `toSingular(normalized)` | Crude singularization: `ies`→`y`, `ses`→`s`, trailing `s`→`""` |
+| `toSingular(normalized)` | Per‑word singularization: `ies`→`y`, `ses`→`s`, trailing `s` unless ending in `"us"` (preserves `"citrus"`), `ing`→ stripped (len > 6, with doubled‑consonant undoubling) |
 | `correctSpelling(normalized)` | Curated fixes map: `milkk`→`milk`, `tomoto`→`tomato`, etc. |
-| `normalizeItem(raw)` | Full pipeline: `normalizeText` → `correctSpelling` (includes `toSingular`) |
+| `normalizeItem(raw)` | Full pipeline: `normalizeText` → `stripUnits` → `correctSpelling` (includes `toSingular`) |
+| `stripUnits(normalized)` | Removes `\d+(\.\d+) \s*(g\|kg\|l\|ml\|m\|cm\|pcs\|pc\|pack\|oz\|lb\|pound)` patterns before singularization |
 
 ### `lib/duplicate.js`
 | Function | Purpose |
@@ -228,8 +229,8 @@ User types/pastes voice text
 ### `lib/enrich.js`
 | Function | Purpose |
 |---|---|
-| `enrichItems(lines, builtin, userMemory)` | Full pipeline: `expandLines` → `detectDuplicates` → lookup → canonical key assignment → `sortItems` → word‑leak filter. Matched items get `normalizeItem(preferredProduct)` as their canonical key; unknown items use `normalizeItem(input)` |
-| `expandLines(lines, builtin, userMemory)` | Flatten input: noise‑filter (brand/size/number via `isNoise`), `compressToMatch` via `buildDisplayName` coverage, if < 70% → greedy `parseTranscript()`. Product‑keys heuristic: all tokens map to same product → keep original as single line; different products → split into individual tokens. Then call `prefixMatchUserMemory()` on each expanded line |
+| `enrichItems(lines, builtin, userMemory)` | Full pipeline: `expandLines` → `detectDuplicates` → lookup → canonical key assignment → `sortItems` → word‑leak filter. Matched items get `normalizeItem(preferredProduct)` as their canonical key; unknown items use `normalizeItem(g.originals[0])` (preserves original text) |
+| `expandLines(lines, builtin, userMemory)` | Flatten input: comma‑split pre‑pass (`"chips, bread"` → two lines), noise‑filter (brand/size/number via `isNoise`), `compressToMatch` via `buildDisplayName` coverage, if < 70% → greedy `parseTranscript()`. Product‑keys heuristic: all tokens map to same product → spread into individual tokens (allows per‑item dedup); different products → also spread. Then call `prefixMatchUserMemory()` on each expanded line |
 | `sortItems(items)` | Unmatched first, then brand → product → size (single sort point for review + clipboard) |
 | `wordLeakFilter(items)` | After sort, removes unknown single‑word items whose text is contained (as substring) in any matched item's `preferredProduct`. Prevents transcript fragments leaking into clipboard |
 | `reLookup(item, builtin, userMemory)` | Re-run lookup after user edits an item's preferred product |
@@ -346,7 +347,7 @@ Each review row has a delete (X) button. After deletion the list is re-copied to
 `prefixMatchUserMemory` is exported separately from `lookup.js` and NOT called inside `lookupProduct`. It is only invoked by `expandLines` and `enrichItems` for clipboard re‑paste matching. This prevents `parseTranscript` from partial‑prefix‑matching mid‑speech (which would pull words into the wrong phrase).
 
 ### 7.12 Product‑keys heuristic
-In `expandLines`, after splitting a low‑coverage line via `parseTranscript`, the heuristic checks whether all resulting tokens resolve to the same product. If yes, the original line is kept intact (prevents oversplitting). If tokens map to different products, each is kept as a separate line.
+In `expandLines`, after splitting a low‑coverage line via `parseTranscript`, the heuristic checks whether all resulting tokens resolve to the same product. If yes, tokens are spread into individual lines (allows per‑item dedup in the next step). If tokens map to different products, each is also kept as a separate line.
 
 ### 7.13 Word‑leak filter
 After sorting, unknown single‑word items that are substrings of any matched item's `preferredProduct` are removed. Without this, transcript fragments like `"paneer"` from `"milk bread paneer"` would leak into the clipboard alongside `"paneer"` as a separate matched line.
@@ -369,6 +370,9 @@ Draft input is saved on every keystroke to both IndexedDB (`appState` store via 
 2. IndexedDB is queried as a secondary fallback (for users with data only in IndexedDB before the sync writes were added).
 3. A `firstRender` ref guards the save effect — the effect returns early on mount without saving, preventing the effect from clearing the draft (via `rawInput=""`) before the restore runs.
 The mechanism is input-mode-agnostic: text, voice, and clipboard all converge through `setRawInput()` → the save effect.
+
+### 7.19 Normalize pipeline: stripUnits before singularization
+`stripUnits` runs before `correctSpelling` (which calls `toSingular`). This ordering is critical: "Eggs 6 pcs" → `stripUnits` → "eggs" → `toSingular` → "egg". Reversing the order would produce "eggs 6 pc" → "eggs" (the s-rule consumed "pcs"→"pc" but "eggs" in the middle kept its 's'). `toSingular` operates per‑word with a `"us"`‑ending exception that preserves "citrus" from the s‑rule. The `ing` rule (`>6` guard, doubled‑consonant undoubling) strips progressive verb forms: "cleaning"→"clean", "packing"→"pack", "running"→"run", "shopping"→"shop". Words like "string" (len 6) and "spring" (len 6) are blocked by the length guard, and "citrus" is preserved by the `"us"` exception.
 
 ---
 
