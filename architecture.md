@@ -47,11 +47,15 @@
 order-app/
 ├── index.html                     # HTML shell, title "BaskIt"
 ├── vite.config.js                 # Vite config + PWA manifest
+├── vitest.config.mjs              # Vitest UI test config
+├── vitest-setup.mjs               # Vitest global setup (jsdom, __APP_VERSION__)
 ├── package.json
+├── .gitignore                     # Ignores node_modules, dist, order_jsons/, /products.csv
 ├── .github/workflows/deploy.yml   # GitHub Pages CI/CD
 ├── plan.md                        # Original Phase 1 plan
-├── requirements.md                # This file
-├── architecture.md                # This file
+├── requirements.md                # Requirements (this file)
+├── architecture.md                # Architecture (this file)
+├── learnings.md                   # Key learnings
 │
 ├── public/
 │   ├── pwa-192x192.png            # PWA icon
@@ -79,14 +83,19 @@ order-app/
 │   │   ├── product.js             # Display name builder + mergeDatabase
 │   │   ├── memory.js              # IndexedDB product CRUD
 │   │   ├── draft.js               # IndexedDB draft persistence
-│   │   └── sheets.js              # Google Sheets sync
+│   │   └── sheets.js              # Google Sheets sync + expandKeywords + error collection
 │   │
-│   └── components/
-│       ├── InputPanel.jsx         # Textarea + voice + action buttons
-│       ├── ReviewPanel.jsx        # Enriched results table
-│       ├── MemoryPanel.jsx        # Product DB editor + settings
-│       ├── ProductTable.jsx       # Shared table component
-│       └── SyncPanel.jsx          # Google Sheets sync UI
+│   ├── components/
+│   │   ├── InputPanel.jsx         # Textarea + voice + action buttons
+│   │   ├── ReviewPanel.jsx        # Enriched results table
+│   │   ├── MemoryPanel.jsx        # Product DB editor + settings
+│   │   ├── ProductTable.jsx       # Shared table component
+│   │   ├── SyncPanel.jsx          # Google Sheets sync UI
+│   │   └── __tests__/             # Vitest UI tests (4 files, 12 assertions)
+│   │       ├── App.test.jsx
+│   │       ├── InputPanel.test.jsx
+│   │       ├── MemoryPanel.test.jsx
+│   │       └── ReviewPanel.test.jsx
 │
 ├── test-assets/
 │   ├── run-tests.mjs              # Test runner (node) — imports all test-*.mjs
@@ -101,6 +110,8 @@ order-app/
 │   ├── test-memory.mjs
 │   ├── test-draft.mjs
 │   ├── test-sheets.mjs
+│   ├── csv/
+│   │   └── products.csv           # CSV fixture (72 rows, tracked in git)
 │   └── manual-input/              # File-based test cases
 │       ├── basic-001.*
 │       ├── duplicate-001.*
@@ -115,6 +126,7 @@ order-app/
 │
 └── scripts/
     ├── build-db.mjs               # Build products.json from order exports
+    ├── clean-keywords.mjs         # Download sheet CSV and apply permutation-syntax cleanups
     ├── clean-products.mjs         # Clean product/brand strings
     └── generate-icons.mjs         # Generate PWA icons from SVG
 ```
@@ -124,24 +136,26 @@ order-app/
 ## 3. Component Tree
 
 ```
-<App>                                     State: rawInput, items, userMemory, tab, syncUrl
-├── <header>                              Sync pill (last sync time, click to re-sync)
+<App>                                     State: rawInput, items, userMemory, tab, syncUrl, enriched, lastSync, statusMsg, firstRender, syncErrors
+├── <header>                              Sync pill (last sync time, orange dot + count when syncErrors)
 │   └── <nav>                             Tab switcher: List | Memory
 │
 ├── [tab=main]
-│   ├── <InputPanel>                      Props: value, onChange, onEnrich, onLaunch
+│   ├── <InputPanel>                      Props: value, onChange, onEnrich, onLaunch, onClear
 │   │   ├── <textarea>                    Raw input, one per line
 │   │   └── <button.mic-btn>              Web Speech API — tap to record, auto‑stop on 2s silence
+│   │
+│   ├── <p.status-msg>                    "Ready! N matched, M unknown" — auto-clears after 3s
 │   │
 │   └── [enriched]
 │       └── <ReviewPanel>                 Props: items, onResetInput, onDeleteItem
 │           └── <ProductTable>.readonly   Table: Brand, Product, Size, Qty; status via rowClass dot
 │
 ├── [tab=settings]
-│   └── <MemoryPanel>                     Props: builtin, userMemory, CRUD callbacks
+│   └── <MemoryPanel>                     Props: builtin, userMemory, CRUD callbacks, syncErrors, onSyncErrors
 │       ├── <ProductTable>.editable       Built-in products (read-only rows)
 │       ├── <ProductTable>.editable       Learned products (with edit/delete actions)
-│       └── <SyncPanel>                   Props: onSync, lastSync, syncUrl, onUrlChange
+│       └── <SyncPanel>                   Props: onSync, lastSync, syncUrl, onUrlChange, syncErrors, onSyncErrors — local errors state + loading from handleSync
 │
 └── <footer.foot-hint>                    "Type, prep, paste into BigBasket"
 ```
@@ -211,7 +225,7 @@ User types/pastes voice text
 | `toSingular(normalized)` | Per‑word singularization: `ies`→`y`, `ses`→`s`, trailing `s` unless ending in `"us"` (preserves `"citrus"`), `ing`→ stripped (len > 6, with doubled‑consonant undoubling) |
 | `correctSpelling(normalized)` | Curated fixes map: `milkk`→`milk`, `tomoto`→`tomato`, etc. |
 | `normalizeItem(raw)` | Full pipeline: `normalizeText` → `stripUnits` → `correctSpelling` (includes `toSingular`) |
-| `stripUnits(normalized)` | Removes `\d+(\.\d+) \s*(g\|kg\|l\|ml\|m\|cm\|pcs\|pc\|pack\|oz\|lb\|pound)` patterns before singularization |
+| `stripUnits(normalized)` | Removes `\d+(\.\d+|\s+\d+(\.\d+)?)?\s*(g\|kg\|l\|ml\|pcs\|pc\|pack\|oz\|lb\|pound)` patterns before singularization |
 
 ### `lib/duplicate.js`
 | Function | Purpose |
@@ -229,8 +243,8 @@ User types/pastes voice text
 ### `lib/enrich.js`
 | Function | Purpose |
 |---|---|
-| `enrichItems(lines, builtin, userMemory)` | Full pipeline: `expandLines` → `detectDuplicates` → lookup → canonical key assignment → `sortItems` → word‑leak filter. Matched items get `normalizeItem(preferredProduct)` as their canonical key; unknown items use `normalizeItem(g.originals[0])` (preserves original text) |
-| `expandLines(lines, builtin, userMemory)` | Flatten input: comma‑split pre‑pass (`"chips, bread"` → two lines), noise‑filter (brand/size/number via `isNoise`), `compressToMatch` via `buildDisplayName` coverage, if < 70% → greedy `parseTranscript()`. Product‑keys heuristic: all tokens map to same product → spread into individual tokens (allows per‑item dedup); different products → also spread. Then call `prefixMatchUserMemory()` on each expanded line |
+| `enrichItems(lines, builtin, userMemory)` | Full pipeline: `expandLines` → `detectDuplicates` → lookup → canonical key assignment → post‑dedup merge (same normalized key → sum quantities) → `sortItems` → word‑leak filter. Matched items get `normalizeItem(preferredProduct)` as their canonical key; unknown items use `normalizeItem(g.originals[0])` (preserves original text) |
+| `expandLines(lines, builtin, userMemory)` | Flatten input: comma‑split pre‑pass (`"chips, bread"` → two lines), noise‑filter (brand/size/number via `isNoise`), `compressToMatch` checks if all other tokens are substrings of one matched token's display name (`buildDisplayName`). If not compressible → greedy `parseTranscript()`. If any parsed token matched, pushes all cleaned tokens as individual lines (same behavior regardless of whether all tokens map to same product or different products — the product‑keys heuristic was removed as both branches produced identical output). Then call `prefixMatchUserMemory()` on each expanded line |
 | `sortItems(items)` | Unmatched first, then brand → product → size (single sort point for review + clipboard) |
 | `wordLeakFilter(items)` | After sort, removes unknown single‑word items whose text is contained (as substring) in any matched item's `preferredProduct`. Prevents transcript fragments leaking into clipboard |
 | `reLookup(item, builtin, userMemory)` | Re-run lookup after user edits an item's preferred product |
@@ -280,8 +294,10 @@ User types/pastes voice text
 | Function | Purpose |
 |---|---|
 | `fetchCsv(url)` | HTTP GET CSV text |
-| `parseCsv(text)` | Parse CSV (handles quoted fields, multi-line values). Columns: brand, product, size, qty, category, keywords |
-| `syncSheet(csvUrl)` | Fetch → parse → upsert each row via `putMemory` → return `{ count, memory }` |
+| `parseCsv(text)` | Parse CSV (handles quoted fields, multi-line values). Returns ALL rows including those without a product; each row has a `_sheetRow` field tracking original CSV line number. Columns: brand, product, size, qty, category, keywords |
+| `expandKeywords(kw)` | Parses permutation syntax (`[a,b][c,d]` → cartesian product: "ac", "a c", "ad", "a d", "bc", "b c", "bd", "b d"). Plain semicolon‑separated tokens pass through unchanged. Returns deduplicated array |
+| `cartesian(sets)` (private) | Cartesian product of string arrays |
+| `syncSheet(csvUrl)` | Fetch → parse → validate each row → upsert via `putMemory` → return `{ count, memory, errors }`. Errors collected for: missing product name, empty normalized key, keyword parse failure, bracket mismatch in keywords. `errors` is `undefined` when empty |
 
 ---
 
@@ -308,6 +324,7 @@ Database: shopping-list-engine (v2)
 |---|---|
 | `sheet-csv-url` | Google Sheets CSV URL (published, `output=csv`) |
 | `draft-input` | Synchronous draft backup — written on every keystroke alongside IndexedDB. Read first on mount to survive app-kill on mobile where `beforeunload` doesn't fire |
+| `baskit-version` | Version string (e.g. `"0.5.0"`). Checked on mount; if different from `__APP_VERSION__`, calls `clearMemory()` to purge stale IndexedDB keys from old formats |
 
 ---
 
@@ -328,8 +345,8 @@ The enriched list is automatically copied to the clipboard, removing the manual 
 ### 7.5 Two IndexedDB stores
 The database `shopping-list-engine` (v2) has two object stores: `userProducts` (product CRUD — keys, keywords, brand, size, category) and `appState` (app-level key-value pairs like `"draft-input"`). The draft functions live in their own module (`lib/draft.js`) to keep `lib/memory.js` focused on product storage. `draft.js` opens the DB without a version number and relies on `memory.js`'s `onupgradeneeded` to create both stores — this avoids a race where `draft.js` opens first and `onupgradeneeded` fires without creating the `appState` store.
 
-### 7.6 File-based regression tests
-Tests are `.txt` input files with corresponding `.expected.json` files, run by `test-assets/run-tests.mjs`. This keeps tests readable and easy to add without a test framework dependency.
+### 7.6 File-based regression tests + vitest UI tests
+Tests are `.txt` input files with corresponding `.expected.json` files, run by `test-assets/run-tests.mjs` (226 module tests across 11 per-module files). Additionally, 12 UI assertions run via `vitest` (`npm run test:ui`) using `jsdom` + `@testing-library/react`, covering component rendering in `src/components/__tests__/`.
 
 ### 7.7 Voice auto-stop on silence; tap to force-stop
 The mic is tap-to-record (not toggle). `interimResults: true` streams results every ~200–500ms for live preview. The live preview is built by `processSpeechResults()` using a cross-event `interimCache` (React ref) with word-overlap alternative detection, iOS sequence handling, and case-insensitive cumulative finals dedup. After 2 seconds of silence the session ends and pending transcript is flushed. Tapping again force-stops and also flushes.
@@ -346,8 +363,8 @@ Each review row has a delete (X) button. After deletion the list is re-copied to
 ### 7.11 Prefix match extracted from lookupProduct
 `prefixMatchUserMemory` is exported separately from `lookup.js` and NOT called inside `lookupProduct`. It is only invoked by `expandLines` and `enrichItems` for clipboard re‑paste matching. This prevents `parseTranscript` from partial‑prefix‑matching mid‑speech (which would pull words into the wrong phrase).
 
-### 7.12 Product‑keys heuristic
-In `expandLines`, after splitting a low‑coverage line via `parseTranscript`, the heuristic checks whether all resulting tokens resolve to the same product. If yes, tokens are spread into individual lines (allows per‑item dedup in the next step). If tokens map to different products, each is also kept as a separate line.
+### 7.12 Expand‑lines match‑any heuristic
+In `expandLines`, after splitting a line via `parseTranscript` and noise‑filtering the tokens, if any token matched a product the tokens are spread into individual lines. If no token matched, the original line is preserved as‑is. (The product‑keys heuristic from an earlier version was removed because both branches produced identical output — `out.push(...clean)` — making the per‑product distinction dead code.)
 
 ### 7.13 Word‑leak filter
 After sorting, unknown single‑word items that are substrings of any matched item's `preferredProduct` are removed. Without this, transcript fragments like `"paneer"` from `"milk bread paneer"` would leak into the clipboard alongside `"paneer"` as a separate matched line.
@@ -371,23 +388,35 @@ Draft input is saved on every keystroke to both IndexedDB (`appState` store via 
 3. A `firstRender` ref guards the save effect — the effect returns early on mount without saving, preventing the effect from clearing the draft (via `rawInput=""`) before the restore runs.
 The mechanism is input-mode-agnostic: text, voice, and clipboard all converge through `setRawInput()` → the save effect.
 
+### 7.20 Permutation keyword syntax
+Keywords in the Google Sheet CSV support `[a,b][c,d]` cartesian‑product syntax via `expandKeywords()` in `lib/sheets.js`. Each bracket group defines alternatives; the function generates both concatenated (`"ac"`) and space‑separated (`"a c"`) forms for every combination. Semicolon‑separated tokens pass through unchanged. Unbalanced brackets silently produce literal text but are detected by `syncSheet`'s bracket‑balance check and reported in the error list.
+
+### 7.21 Sync error reporting
+`syncSheet` validates each CSV row and collects `errors: [{ row, reason }]` for skipped rows: missing product name, key normalizes to empty, keyword parse failure, bracket mismatch. The header sync‑pill shows an orange warning dot + count when errors exist; expanding the SyncPanel in the Memory tab reveals the full row‑by‑row error list. All three sync paths (mount, 5‑min interval, manual pill click) capture errors into global state so the indicator persists until the next sync.
+
+### 7.22 Version‑triggered memory cleanup
+On mount, `App.jsx` compares `localStorage("baskit-version")` against `__APP_VERSION__` (injected by Vite's `define`). A mismatch triggers `clearMemory()` to purge IndexedDB keys that may have stale formats from a previous version, then writes the current version to localStorage. This ensures `syncSheet` repopulates with fresh keys on every version bump.
+
 ### 7.19 Normalize pipeline: stripUnits before singularization
-`stripUnits` runs before `correctSpelling` (which calls `toSingular`). This ordering is critical: "Eggs 6 pcs" → `stripUnits` → "eggs" → `toSingular` → "egg". Reversing the order would produce "eggs 6 pc" → "eggs" (the s-rule consumed "pcs"→"pc" but "eggs" in the middle kept its 's'). `toSingular` operates per‑word with a `"us"`‑ending exception that preserves "citrus" from the s‑rule. The `ing` rule (`>6` guard, doubled‑consonant undoubling) strips progressive verb forms: "cleaning"→"clean", "packing"→"pack", "running"→"run", "shopping"→"shop". Words like "string" (len 6) and "spring" (len 6) are blocked by the length guard, and "citrus" is preserved by the `"us"` exception.
+`stripUnits` runs before `correctSpelling` (which calls `toSingular`). This ordering is critical: "Eggs 6 pcs" → `stripUnits` → "eggs" → `toSingular` → "egg". Reversing the order would produce "eggs 6 pc" → "eggs" (the s-rule consumed "pcs"→"pc" but "eggs" in the middle kept its 's'). `toSingular` operates per‑word with a `"us"`‑ending exception that preserves "citrus" from the s‑rule. The `ing` rule (`>6` guard, doubled‑consonant undoubling) strips progressive verb forms: "cleaning"→"clean", "packing"→"pack", "running"→"run", "shopping"→"shop". Words like "string" (len 6) and "spring" (len 6) are blocked by the length guard, and "citrus" is preserved by the `"us"` exception. `UNIT_PATTERN` matches `\d+(\.\d+|\s+\d+(\.\d+)?)?\s*(g|kg|l|ml|pcs|pc|pack|oz|lb|pound)\b` — note `m`/`cm` were removed after causing false positives on "m" in product names (meter, minute).
 
 ---
 
 ## 8. Build & CI Pipeline
 
 ```
-npm run dev         → Vite dev server (HMR)
-npm run build       → Vite build → dist/
-npm run test        → node test-assets/run-tests.mjs
-npm run lint        → oxlint
-npm run build-db    → scripts/build-db.mjs
+npm run dev            → Vite dev server (HMR)
+npm run build          → Vite build → dist/
+npm run test           → node test-assets/run-tests.mjs       (226 module tests)
+npm run test:ui        → vitest run                           (12 UI tests)
+npm run lint           → oxlint
+npm run build-db       → scripts/build-db.mjs
+npm run clean-db       → scripts/clean-products.mjs
+npm run clean-keywords → node scripts/clean-keywords.mjs      (download sheet, compact keywords)
 npm run generate-icons → scripts/generate-icons.mjs
 
-GitHub Actions:
-  Push to main → build → deploy to GitHub Pages
+GitHub Actions (deploy.yml):
+  Push to main → Setup Node 22 → npm ci → npm test → npm run build → Deploy to Pages
 ```
 
 ---
@@ -401,7 +430,13 @@ GitHub Actions:
 | `vite` | ^8.1 | Build tool / dev server |
 | `@vitejs/plugin-react` | ^6.0 | React JSX transform |
 | `vite-plugin-pwa` | ^1.3 | PWA manifest + service worker |
+| `vitest` | ^4.1 | UI test runner |
+| `@testing-library/react` | ^16.3 | Component test utilities |
+| `@testing-library/jest-dom` | ^6.9 | DOM matchers for vitest |
+| `jsdom` | ^29.1 | Browser environment for vitest |
+| `@types/react` | ^19.2 | React type definitions |
+| `@types/react-dom` | ^19.2 | React DOM type definitions |
 | `oxlint` | ^1.71 | Linter |
 | Web Speech API | Browser | Voice input (`SpeechRecognition` / `webkitSpeechRecognition`) |
 | IndexedDB | Browser | User memory storage |
-| `localStorage` | Browser | Sheet URL + prefs |
+| `localStorage` | Browser | Sheet URL, draft backup, version key |

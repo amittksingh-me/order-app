@@ -18,6 +18,8 @@ export default function MemoryPanel({
   lastSync,
   syncUrl,
   onUrlChange,
+  syncErrors,
+  onSyncErrors,
 }) {
   const [view, setView] = useState("learned"); // builtin | learned
   const [query, setQuery] = useState("");
@@ -212,6 +214,8 @@ export default function MemoryPanel({
         lastSync={lastSync}
         syncUrl={syncUrl}
         onUrlChange={onUrlChange}
+        syncErrors={syncErrors}
+        onSyncErrors={onSyncErrors}
       />
 
       <div className="search-box">

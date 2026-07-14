@@ -21,7 +21,7 @@ vi.mock("../../lib/memory", () => ({
 }));
 
 vi.mock("../../lib/sheets", () => ({
-  syncSheet: vi.fn().mockResolvedValue({ count: 0, memory: {} }),
+  syncSheet: vi.fn().mockResolvedValue({ count: 0, memory: {}, errors: undefined }),
 }));
 
 describe("App", () => {
@@ -37,6 +37,6 @@ describe("App", () => {
 
   it("renders version badge", () => {
     render(<App />);
-    expect(screen.getByText(/v0\.3\.0/)).toBeInTheDocument();
+    expect(screen.getByText(/v0\.5\.0/)).toBeInTheDocument();
   });
 });

@@ -753,6 +753,29 @@ button {
   background: #dddaff;
 }
 
+.sync-pill.has-errors {
+  background: #fff3e0;
+  color: #e65100;
+}
+.sync-pill.has-errors:hover {
+  background: #ffe0b2;
+}
+
+.sync-pill-warn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e65100;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+  line-height: 1;
+}
+
 /* ---------- Sync details in Memory panel ---------- */
 .sync-details {
   border: 1px solid var(--border);
@@ -865,6 +888,42 @@ button {
 
 .sync-error {
   color: var(--danger);
+}
+
+.sync-error-details {
+  margin-top: 10px;
+  font-size: 13px;
+  border: 1px solid #ffcdd2;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #fff5f5;
+}
+
+.sync-error-toggle {
+  cursor: pointer;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--danger);
+  user-select: none;
+  list-style: none;
+}
+
+.sync-error-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.sync-error-list {
+  margin: 0;
+  padding: 0 12px 10px 32px;
+  color: var(--danger);
+  line-height: 1.7;
+}
+
+.sync-error-row {
+  font-size: 12px;
 }
 
 .sync-help {

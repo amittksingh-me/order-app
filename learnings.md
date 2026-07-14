@@ -40,6 +40,24 @@
 - Split when persistence semantics differ: `draft.js` opens the DB without a version; `memory.js` owns `onupgradeneeded`. Different open strategy → different file.
 - Move pure data transforms out of components: `mergeDatabase` belongs in `product.js`, not `App.jsx`.
 
+## Sync Error Collection — Row Tracking
+- `parseCsv` no longer filters out rows without a product — all rows are returned with a `_sheetRow` field tracking the original CSV line number.
+- `syncSheet` validates each row and collects `errors: [{ row, reason }]` for: missing product name, key normalizes to empty, keyword parse failure, bracket mismatch.
+- The header sync‑pill shows an orange count badge when errors exist; the error list is visible in the SyncPanel on the Memory tab.
+
+## expandKeywords — Permutation Syntax
+- `[a,b][c,d]` cartesian syntax expands to concatenated + space-separated forms for every combination.
+- Balanced‑only: `[unbalanced` is silently treated as literal text — no crash. A separate bracket‑count check in `syncSheet` reports mismatches.
+- `cartesian()` is a private helper generating the product of string arrays.
+
+## Version‑Triggered Cleanup
+- `localStorage("baskit-version")` is compared to `__APP_VERSION__` on mount. A mismatch calls `clearMemory()` to purge stale IndexedDB keys from old formats.
+- This ensures `syncSheet` repopulates with fresh keys after a version bump where the key‑format may have changed.
+
+## m/cm Removed from UNIT_PATTERN
+- `m` and `cm` were removed from `stripUnits` because they caused false positives: "m" matched "minute", "meter", or brand abbreviations in product names where no unit stripping was intended.
+- Remaining units: `g|kg|l|ml|pcs|pc|pack|oz|lb|pound`.
+
 ## Input-Mode Agnosticism
 - Text, voice, and clipboard all converge through `setRawInput()` → the same save effect. The source does not matter for persistence correctness.
 - The enrichment pipeline (`enrichItems`) accepts raw strings — it does not care whether they came from a textarea, speech recognition, or a paste event.

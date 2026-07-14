@@ -70,7 +70,7 @@ export function parseCsv(text) {
     headers.forEach((h, idx) => {
       row[h.trim().toLowerCase()] = (values[idx] || "").replace(/^"|"$/g, "").trim();
     });
-    if (!row.product) continue;
+    row._sheetRow = i + 1; // original CSV line number (1-indexed, header = row 1)
     row.defaultQty = parseInt(row.defaultQty || row.qty || "1", 10) || 1;
     rows.push(row);
   }
@@ -114,14 +114,37 @@ function parseLine(line) {
 export async function syncSheet(csvUrl) {
   const text = await fetchCsv(csvUrl);
   const rows = parseCsv(text);
+  const errors = [];
 
   let count = 0;
   for (const row of rows) {
+    if (!row.product) {
+      errors.push({ row: row._sheetRow, reason: "no product name" });
+      continue;
+    }
     const key = normalizeItem(
       `${row.brand || ""} ${row.product} ${row.size || ""}`
     );
-    if (!key) continue;
-    const keywords = row.keywords ? expandKeywords(row.keywords) : [];
+    if (!key) {
+      errors.push({ row: row._sheetRow, reason: "key normalizes to empty" });
+      continue;
+    }
+    let keywords;
+    try {
+      keywords = row.keywords ? expandKeywords(row.keywords) : [];
+    } catch {
+      errors.push({ row: row._sheetRow, reason: "keyword parse error" });
+      continue;
+    }
+    // Check bracket balance even when expandKeywords succeeds (silently
+    // treats unbalanced brackets as literals, which is never intended).
+    if (row.keywords) {
+      const opens = (row.keywords.match(/\[/g) || []).length;
+      const closes = (row.keywords.match(/\]/g) || []).length;
+      if (opens !== closes) {
+        errors.push({ row: row._sheetRow, reason: "bracket mismatch" });
+      }
+    }
 
     const record = {
       product: row.product,
@@ -136,5 +159,5 @@ export async function syncSheet(csvUrl) {
   }
 
   const memory = await getAllMemory();
-  return { count, memory };
+  return { count, memory, errors: errors.length > 0 ? errors : undefined };
 }

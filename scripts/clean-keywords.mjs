@@ -45,6 +45,7 @@ async function main() {
   let changed = 0;
 
   for (const row of rows) {
+    if (!row.product) continue;
     let kw = row.keywords || "";
 
     for (const rule of RULES) {

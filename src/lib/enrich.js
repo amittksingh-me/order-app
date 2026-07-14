@@ -56,24 +56,8 @@ function expandLines(lines, builtin, userMemory) {
             const matched = clean.filter((s) =>
               lookupProduct(normalizeItem(s), builtin, userMemory).matched
             );
-            const unmatched = clean.filter((s) =>
-              !lookupProduct(normalizeItem(s), builtin, userMemory).matched
-            );
-            if (unmatched.length === 0) {
+            if (matched.length > 0) {
               out.push(...clean);
-            } else if (matched.length > 0) {
-              const productKeys = new Set();
-              for (const s of matched) {
-                const look = lookupProduct(normalizeItem(s), builtin, userMemory);
-                if (look.matched) {
-                  productKeys.add(`${look.product.product}||${look.product.brand}||${look.product.size}`);
-                }
-              }
-              if (productKeys.size === 1) {
-                out.push(...clean);
-              } else {
-                out.push(...clean);
-              }
             } else {
               out.push(line);
             }

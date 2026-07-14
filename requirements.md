@@ -42,12 +42,12 @@
 |---|---|---|---|
 | R2.5 | Store user product preferences locally | ✅ | Single store `userProducts` keyed by normalized key |
 | R2.6 | User memory takes priority over built-in | ✅ | Checked first in `lookupProduct()` |
-| R2.7 | Google Sheets one-way sync (CSV → IndexedDB) | ✅ | `syncSheet()` — fetches, parses, upserts; auto-runs on load and every 5 min |
+| R2.7 | Google Sheets one-way sync (CSV → IndexedDB) | ✅ | `syncSheet()` — fetches, parses, upserts; returns `{ count, memory, errors }` where `errors` lists skipped rows with `{ row, reason }`. Auto-runs on load and every 5 min |
 | R2.8 | Configurable sheet URL | ✅ | Stored in `localStorage`; defaults to a pre-configured URL |
 | R2.9 | Full CRUD on learned products | ✅ | Memory panel: add, edit, delete learned entries |
 | R2.10 | Export merged database as JSON | ✅ | Downloads `products.json` — built-in + user overrides merged |
 | R2.11 | Import JSON into IndexedDB | ✅ | Bulk import via file picker |
-| R2.12 | Reset (clear all user memory) | ✅ | With confirmation |
+| R2.12 | Reset (clear all user memory) | ✅ | `clearMemory()` — no confirmation dialog |
 
 ---
 
@@ -96,7 +96,7 @@
 | R5.4 | Memory tab: view learned products | ✅ | Separate toggle, inline editing |
 | R5.5 | Memory tab: sheet URL config + sync UI | ✅ | SyncPanel with URL input, instructions, sync button |
 | R5.6 | Foot hint | ✅ | "Type, prep, paste into BigBasket" — subtle pill |
-| R5.7 | Responsive / mobile-first CSS | ✅ | 871 lines of CSS with custom properties, media queries |
+| R5.7 | Responsive / mobile-first CSS | ✅ | 1121 lines of CSS with custom properties, media queries |
 
 ---
 
@@ -116,7 +116,7 @@
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — orchestrator importing 11 per-module test files. 174 tests total: 43 normalize, 4 duplicate, 9 lookup, 31 enrich (17 file-based + 14 inline), 10 voice, 24 speech, 5 format, 6 product, 7 memory (exports), 6 draft (exports), 8 sheets (exports + parseCsv) |
+| R7.1 | Regression test suite for enrichment engine | ✅ | `test-assets/run-tests.mjs` — orchestrator importing 11 per-module test files. **226 tests**: 50 normalize, 7 duplicate, 15 lookup, 52 enrich (17 file-based + 35 inline), 15 voice, 24 speech, 6 format, 12 product, 14 memory (exports), 6 draft (exports), 25 sheets (exports, parseCsv, expandKeywords, error collection). Plus 12 UI assertions in 4 vitest files (`src/components/__tests__/`) |
 | R7.2 | Tests cover: basic matching, duplicates, spelling, unknown, memory overrides, voice parsing, unknown‑first sort, paste‑cycle (clipboard re‑paste), paste‑cycle‑roundtrip (cycle 1 == cycle 2), paste‑noise (attribute words), speech (iOS/Android/Safari), reLookup, mergeDatabase, format, module exports | ✅ | |
 | R7.3 | Every bug fix adds a regression test | ✅ | Pattern established — 174 tests across 11 per-module files, covering all platforms |
 
@@ -148,3 +148,4 @@ Features described in `plan.md` but not yet implemented:
 | Manual "Copy Shopping List" button | plan.md acceptance criteria | Low — auto-copy covers most of the need |
 | Quantity in clipboard output | "x2" suffix in examples | Low — quantity is visible in the review table |
 | "eggs" product in built-in DB | plan.md acceptance criteria | Low — can be added via sheet sync |
+| Sync error detail not visible from List tab | — | Low — header sync pill shows error count; details are one tap away in Memory tab SyncPanel |

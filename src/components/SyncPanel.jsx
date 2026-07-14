@@ -18,10 +18,11 @@ function saveUrl(url) {
   } catch {}
 }
 
-export default function SyncPanel({ onSync, lastSync, syncUrl, onUrlChange }) {
+export default function SyncPanel({ onSync, lastSync, syncUrl, onUrlChange, syncErrors, onSyncErrors }) {
   const [url, setUrl] = useState(loadUrl);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState(null);
 
   async function handleSync() {
     const trimmed = url.trim();
@@ -31,11 +32,15 @@ export default function SyncPanel({ onSync, lastSync, syncUrl, onUrlChange }) {
     }
     setLoading(true);
     setStatus(null);
+    setErrors(null);
     saveUrl(trimmed);
     onUrlChange(trimmed);
     try {
       const result = await syncSheet(trimmed);
-      setStatus({ type: "success", message: `Synced ${result.count} products` });
+      const base = `Synced ${result.count} products`;
+      setStatus({ type: "success", message: result.errors ? `${base} (${result.errors.length} issue${result.errors.length !== 1 ? 's' : ''})` : base });
+      setErrors(result.errors || null);
+      onSyncErrors(result.errors || null);
       onSync(result.memory);
     } catch (err) {
       setStatus({ type: "error", message: err.message || "Sync failed" });
@@ -93,6 +98,24 @@ export default function SyncPanel({ onSync, lastSync, syncUrl, onUrlChange }) {
 
         {status && (
           <p className={`sync-status sync-${status.type}`}>{status.message}</p>
+        )}
+
+        {((errors && errors.length > 0) || (syncErrors && syncErrors.length > 0 && !errors)) && (
+          <details className="sync-error-details">
+            <summary className="sync-error-toggle">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:6}}>
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              {(errors || syncErrors).length} row{(errors || syncErrors).length !== 1 ? 's' : ''} skipped
+            </summary>
+            <ul className="sync-error-list">
+              {(errors || syncErrors).map((e, i) => (
+                <li key={i} className="sync-error-row">
+                  Row {e.row} — {e.reason}
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
 
         <details className="sync-help">

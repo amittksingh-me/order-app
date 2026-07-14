@@ -31,6 +31,7 @@ export default function App() {
   const [statusMsg, setStatusMsg] = useState("");
   const [tab, setTab] = useState("main"); // main | settings
   const [lastSync, setLastSync] = useState(null);
+  const [syncErrors, setSyncErrors] = useState(null);
   const [syncUrl, setSyncUrl] = useState(() => {
     try {
       return localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
@@ -57,6 +58,7 @@ export default function App() {
       const result = await syncSheet(url);
       setUserMemory(result.memory);
       setLastSync(Date.now());
+      setSyncErrors(result.errors || null);
     } catch {}
   }
 
@@ -95,6 +97,7 @@ export default function App() {
         .then((res) => {
           setUserMemory(res.memory);
           setLastSync(Date.now());
+          setSyncErrors(res.errors || null);
         })
         .catch(() => {});
     } catch {}
@@ -107,6 +110,7 @@ export default function App() {
             .then((res) => {
               setUserMemory(res.memory);
               setLastSync(Date.now());
+              setSyncErrors(res.errors || null);
             })
             .catch(() => {});
         }
@@ -267,13 +271,16 @@ export default function App() {
           </button>
         </nav>
         {syncUrl && (
-          <button className="sync-pill" onClick={handleSyncNow} title="Sync now">
+          <button className={`sync-pill${syncErrors && syncErrors.length > 0 ? " has-errors" : ""}`} onClick={handleSyncNow} title="Sync now">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}>
               <polyline points="23 4 23 10 17 10" />
               <polyline points="1 20 1 14 7 14" />
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
             </svg>
             {ago(lastSync)}
+            {syncErrors && syncErrors.length > 0 && (
+              <span className="sync-pill-warn">{syncErrors.length}</span>
+            )}
           </button>
         )}
       </header>
@@ -311,7 +318,8 @@ export default function App() {
           lastSync={lastSync}
           syncUrl={syncUrl}
           onUrlChange={setSyncUrl}
-
+          syncErrors={syncErrors}
+          onSyncErrors={setSyncErrors}
         />
       )}
       <p className="foot-hint">Type, prep, paste into BigBasket  <span className="version-badge">{typeof __APP_VERSION__ !== "undefined" ? `v${__APP_VERSION__}` : ""}</span></p>

@@ -15,6 +15,7 @@ function buildMemoryFromCsv() {
   const rows = parseCsv(text);
   const mem = {};
   for (const row of rows) {
+    if (!row.product) continue;
     const key = normalizeItem(`${row.brand || ""} ${row.product} ${row.size || ""}`);
     if (!key) continue;
     const keywords = row.keywords ? expandKeywords(row.keywords) : [];
@@ -193,6 +194,30 @@ export function run() {
     const xyzzyItem = items.find((i) => i.input === "xyzzy");
     ok(milkItem && milkItem.matched, "mixed-known-unknown: milk matched");
     ok(xyzzyItem && !xyzzyItem.matched, "mixed-known-unknown: xyzzy unmatched");
+  }
+
+  // Multi-word line where some tokens match and some don't.
+  // Exercises expandLines path where parseTranscript splits a line and
+  // matched.length > 0 pushes all cleaned tokens as individual lines.
+  {
+    const mixedMemory = {
+      milk: { product: "Milk", brand: "", size: "", defaultQty: 1, category: "", keywords: [] },
+    };
+    const lines = ["milk foobar"];
+    const items = enrichItems(lines, {}, mixedMemory);
+    ok(items.length === 2, "mixed-match-split: 2 items from line");
+    const matched = items.find((i) => i.matched);
+    const unknown = items.find((i) => !i.matched);
+    ok(matched && matched.input === "milk", "mixed-match-split: milk matched");
+    ok(unknown && unknown.input === "foobar", "mixed-match-split: foobar unknown");
+  }
+
+  // Multi-word line where no tokens match: original line preserved as-is.
+  {
+    const items = enrichItems(["foo bar"], {}, {});
+    ok(items.length === 1, "mixed-match-none: 1 item from line");
+    ok(items[0].input === "foo bar", "mixed-match-none: original line preserved");
+    ok(!items[0].matched, "mixed-match-none: unmatched");
   }
 
   // Permutation keyword match: user-memory entry with [moong,mung][phali,fali]
