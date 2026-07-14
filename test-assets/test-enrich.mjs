@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { enrichItems, reLookup } from "../src/lib/enrich.js";
 import { formatShoppingList } from "../src/lib/format.js";
 import { normalizeItem } from "../src/lib/normalize.js";
-import { parseCsv } from "../src/lib/sheets.js";
+import { parseCsv, expandKeywords } from "../src/lib/sheets.js";
 import products from "../src/data/products.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -17,9 +17,7 @@ function buildMemoryFromCsv() {
   for (const row of rows) {
     const key = normalizeItem(`${row.brand || ""} ${row.product} ${row.size || ""}`);
     if (!key) continue;
-    const keywords = row.keywords
-      ? row.keywords.split(";").map((k) => k.trim()).filter(Boolean)
-      : [];
+    const keywords = row.keywords ? expandKeywords(row.keywords) : [];
     mem[key] = {
       product: row.product,
       brand: row.brand || "",
@@ -195,6 +193,29 @@ export function run() {
     const xyzzyItem = items.find((i) => i.input === "xyzzy");
     ok(milkItem && milkItem.matched, "mixed-known-unknown: milk matched");
     ok(xyzzyItem && !xyzzyItem.matched, "mixed-known-unknown: xyzzy unmatched");
+  }
+
+  // Permutation keyword match: user-memory entry with [moong,mung][phali,fali]
+  // should resolve all 3 variants to the same product (dedup merges them into 1)
+  {
+    const permMemory = {
+      "test moongphali": {
+        product: "Test Moongphali",
+        brand: "",
+        size: "1 kg",
+        defaultQty: 1,
+        category: "",
+        keywords: ["test", "moongphali", "moong phali", "mungphali", "mung phali", "moongfali", "moong fali", "mungfali", "mung fali"],
+      },
+    };
+    const lines = ["moongphali", "mung phali", "moong fali", "unknown thing"];
+    const items = enrichItems(lines, products, permMemory);
+    ok(items.length === 2, "perm-keywords: 2 items (dedup merged 3 matched into 1)");
+    const matched = items.filter(i => i.matched);
+    ok(matched.length === 1, "perm-keywords: 1 matched product");
+    ok(matched[0].input === "moongphali", "perm-keywords: first variant preserved as input");
+    const unknown = items.find(i => i.input === "unknown thing");
+    ok(unknown && !unknown.matched, "perm-keywords: unknown unmatched");
   }
 
   return { pass, fail };

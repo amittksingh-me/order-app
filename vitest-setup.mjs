@@ -4,7 +4,7 @@ import { afterEach } from "vitest";
 
 afterEach(cleanup);
 
-globalThis.__APP_VERSION__ = "0.2.0";
+globalThis.__APP_VERSION__ = "0.3.0";
 
 if (typeof globalThis.localStorage === "undefined") {
   const store = {};

@@ -1,6 +1,30 @@
 import { normalizeItem } from "./normalize.js";
 import { putMemory, getAllMemory } from "./memory.js";
 
+function cartesian(sets) {
+  return sets.reduce(
+    (acc, set) => acc.flatMap(a => set.map(b => [...a, b])),
+    [[]]
+  );
+}
+
+export function expandKeywords(kw) {
+  if (!kw) return [];
+  const result = [];
+  for (const token of kw.split(";").map(t => t.trim()).filter(Boolean)) {
+    const groups = [...token.matchAll(/\[([^\]]+)\]/g)];
+    if (groups.length === 0) { result.push(token); continue; }
+    const altSets = groups.map(g =>
+      g[1].split(",").map(a => a.trim()).filter(Boolean)
+    );
+    for (const combo of cartesian(altSets)) {
+      result.push(combo.join(""));
+      result.push(combo.join(" "));
+    }
+  }
+  return [...new Set(result)];
+}
+
 export async function fetchCsv(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -97,9 +121,7 @@ export async function syncSheet(csvUrl) {
       `${row.brand || ""} ${row.product} ${row.size || ""}`
     );
     if (!key) continue;
-    const keywords = row.keywords
-      ? row.keywords.split(";").map((k) => k.trim()).filter(Boolean)
-      : [];
+    const keywords = row.keywords ? expandKeywords(row.keywords) : [];
 
     const record = {
       product: row.product,
