@@ -5,7 +5,6 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
   const onChangeRef = useRef(onChange);
-  const silenceTimerRef = useRef(null);
   const transcriptAccumRef = useRef([]);
   const preRecordingTextRef = useRef(null);
   const interimCacheRef = useRef({});
@@ -27,8 +26,6 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
     window.SpeechRecognition || window.webkitSpeechRecognition;
   const supported = !!SpeechRecognition;
 
-  const SILENCE_MS = 2000;
-
   useEffect(() => {
     if (!supported) return;
 
@@ -49,21 +46,12 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
       const display = processSpeechResults(newResults, event.resultIndex, transcriptAccumRef.current, interimCacheRef.current);
       const pre = preRecordingTextRef.current;
       onChangeRef.current(pre ? pre + "\n" + display : display);
-
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => {
-        recog.stop();
-      }, SILENCE_MS);
     };
 
     recog.onerror = () => setListening(false);
 
     recog.onend = () => {
       setListening(false);
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = null;
-      }
       interimCacheRef.current = {};
       const acc = transcriptAccumRef.current;
       transcriptAccumRef.current = [];
@@ -79,7 +67,6 @@ export default function InputPanel({ value, onChange, onEnrich, onLaunch, onClea
 
     return () => {
       recog.abort();
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     };
   }, [supported]);
 

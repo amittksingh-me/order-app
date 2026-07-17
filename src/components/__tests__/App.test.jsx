@@ -37,6 +37,6 @@ describe("App", () => {
 
   it("renders version badge", () => {
     render(<App />);
-    expect(screen.getByText(/v0\.5\.0/)).toBeInTheDocument();
+    expect(screen.getByText(/v0\.6\.0/)).toBeInTheDocument();
   });
 });

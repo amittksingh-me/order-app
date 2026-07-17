@@ -348,8 +348,8 @@ The database `shopping-list-engine` (v2) has two object stores: `userProducts` (
 ### 7.6 File-based regression tests + vitest UI tests
 Tests are `.txt` input files with corresponding `.expected.json` files, run by `test-assets/run-tests.mjs` (226 module tests across 11 per-module files). Additionally, 12 UI assertions run via `vitest` (`npm run test:ui`) using `jsdom` + `@testing-library/react`, covering component rendering in `src/components/__tests__/`.
 
-### 7.7 Voice auto-stop on silence; tap to force-stop
-The mic is tap-to-record (not toggle). `interimResults: true` streams results every ~200–500ms for live preview. The live preview is built by `processSpeechResults()` using a cross-event `interimCache` (React ref) with word-overlap alternative detection, iOS sequence handling, and case-insensitive cumulative finals dedup. After 2 seconds of silence the session ends and pending transcript is flushed. Tapping again force-stops and also flushes.
+### 7.7 Tap to stop; no auto-stop
+The mic stays on until the user taps the button again. `interimResults: true` streams results every ~200–500ms for live preview. The live preview is built by `processSpeechResults()` using a cross-event `interimCache` (React ref) with word-overlap alternative detection, iOS sequence handling, and case-insensitive cumulative finals dedup. Tapping the mic again force-stops and flushes the pending transcript.
 
 ### 7.8 Single sort point in enrichItems
 `sortItems()` runs once at the end of `enrichItems` — unmatched first, then by brand → product → size. Removing `sort()` from `formatShoppingList` ensures review table and clipboard always display the same order.
